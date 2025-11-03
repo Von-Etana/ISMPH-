@@ -3,7 +3,16 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/src/store';
 
 export default function Index() {
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
 
-  return <Redirect href={isAuthenticated ? '/(tabs)' : '/auth'} />;
+  if (!isAuthenticated) {
+    return <Redirect href="/auth" />;
+  }
+
+  // Redirect admin users to admin dashboard
+  if (user?.role === 'admin') {
+    return <Redirect href="/admin/index" />;
+  }
+
+  return <Redirect href="/(tabs)" />;
 }

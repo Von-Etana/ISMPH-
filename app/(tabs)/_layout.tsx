@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Tabs, router } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/src/store';
-import { Home, Newspaper, FileText, MessageSquare, User } from 'lucide-react-native';
+import { Home, Newspaper, FileText, MessageSquare, User, MessageCircle } from 'lucide-react-native';
 import { COLORS } from '@/src/constants/theme';
 
 export default function TabLayout() {
@@ -57,6 +57,13 @@ export default function TabLayout() {
         options={{
           title: 'Feedback',
           tabBarIcon: ({ size, color }) => <MessageSquare size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ size, color }) => <MessageCircle size={size} color={color} />,
         }}
       />
       <Tabs.Screen

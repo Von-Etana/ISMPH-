@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { router } from 'expo-router';
 import { RootState, AppDispatch } from '@/src/store';
@@ -35,6 +35,11 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Image
+          source={require('@/assets/images/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.headerTitle}>Profile</Text>
       </View>
 
@@ -102,7 +107,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     padding: SPACING.lg,
     paddingTop: SPACING.xl + 20,
+    alignItems: 'center',
   },
+  logo: { width: 60, height: 60, marginBottom: SPACING.sm },
   headerTitle: {
     ...TYPOGRAPHY.h2,
     color: COLORS.white,

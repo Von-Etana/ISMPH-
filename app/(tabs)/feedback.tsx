@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
+  Image,
 } from 'react-native';
 import { Card } from '@/src/components/Card';
 import { Button } from '@/src/components/Button';
@@ -145,6 +146,11 @@ export default function FeedbackScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Image
+          source={require('@/assets/images/icon.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.headerTitle}>ISMPH Feedback System</Text>
         <Text style={styles.headerSubtitle}>Find facilities, report issues, and track alerts</Text>
       </View>
@@ -504,7 +510,8 @@ export default function FeedbackScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20 },
+  header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20, alignItems: 'center' },
+  logo: { width: 60, height: 60, marginBottom: SPACING.sm },
   headerTitle: { ...TYPOGRAPHY.h2, color: COLORS.white },
   headerSubtitle: { ...TYPOGRAPHY.body2, color: COLORS.white, opacity: 0.9, marginTop: SPACING.xs },
   content: { flex: 1 },

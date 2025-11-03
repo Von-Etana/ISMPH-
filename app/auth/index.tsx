@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
@@ -62,6 +63,11 @@ export default function AuthScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>ISMPH Media Tracker</Text>
           <Text style={styles.subtitle}>
             International Society of Media in Public Health
@@ -98,7 +104,7 @@ export default function AuthScreen() {
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Role</Text>
                 <View style={styles.roleButtons}>
-                  {['public', 'staff'].map((r) => (
+                  {['public', 'staff', 'admin'].map((r) => (
                     <TouchableOpacity
                       key={r}
                       style={[styles.roleButton, role === r && styles.roleButtonActive]}
@@ -164,6 +170,11 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: SPACING.xl,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: SPACING.md,
   },
   title: {
     ...TYPOGRAPHY.h1,

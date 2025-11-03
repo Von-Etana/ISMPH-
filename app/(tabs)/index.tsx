@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Dimensions,
+  Image,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { router } from 'expo-router';
@@ -92,6 +93,11 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Image
+          source={require('@/assets/images/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.headerTitle}>ISMPH Dashboard</Text>
         <Text style={styles.headerSubtitle}>Welcome, {user?.full_name || user?.email}</Text>
       </View>
@@ -369,7 +375,8 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20 },
+  header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20, alignItems: 'center' },
+  logo: { width: 80, height: 80, marginBottom: SPACING.sm },
   headerTitle: { ...TYPOGRAPHY.h2, color: COLORS.white },
   headerSubtitle: { ...TYPOGRAPHY.body2, color: COLORS.white, opacity: 0.9, marginTop: SPACING.xs },
   content: { flex: 1 },

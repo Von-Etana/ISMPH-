@@ -47,3 +47,13 @@ export interface Report {
   created_at: string;
   updated_at: string;
 }
+
+export interface Message {
+  id: string;
+  user_id: string;
+  zone: string;
+  message: string;
+  timestamp: string;
+  sender_name?: string;
+  sender_role?: UserRole;
+}

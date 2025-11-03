@@ -189,6 +189,11 @@ export default function ReportsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Image
+          source={require('@/assets/images/logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.headerTitle}>PHC State Reports</Text>
         <Text style={styles.headerSubtitle}>Submit and track facility reports</Text>
       </View>
@@ -409,7 +414,8 @@ export default function ReportsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20 },
+  header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20, alignItems: 'center' },
+  logo: { width: 60, height: 60, marginBottom: SPACING.sm },
   headerTitle: { ...TYPOGRAPHY.h2, color: COLORS.white },
   headerSubtitle: { ...TYPOGRAPHY.body2, color: COLORS.white, opacity: 0.9, marginTop: SPACING.xs },
   tabsContainer: { flexDirection: 'row', backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.border },
