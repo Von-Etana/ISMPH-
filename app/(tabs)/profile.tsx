@@ -35,11 +35,13 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image
-          source={require('@/assets/images/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Profile</Text>
       </View>
 
@@ -71,7 +73,18 @@ export default function ProfileScreen() {
 
             <View style={styles.divider} />
 
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => {
+              // Cycle through languages: English -> Igbo -> Yoruba -> Hausa -> English
+              const languages = ['English', 'Igbo', 'Yoruba', 'Hausa'];
+              const currentIndex = languages.indexOf('English'); // Default to English
+              const nextIndex = (currentIndex + 1) % languages.length;
+              const nextLanguage = languages[nextIndex];
+              Toast.show({
+                type: 'info',
+                text1: 'Language Changed',
+                text2: `Switched to ${nextLanguage}. Full translation coming soon.`,
+              });
+            }}>
               <View style={styles.menuLeft}>
                 <Globe size={24} color={COLORS.text} />
                 <Text style={styles.menuText}>Language</Text>
@@ -81,7 +94,7 @@ export default function ProfileScreen() {
 
             <View style={styles.divider} />
 
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/settings')}>
               <View style={styles.menuLeft}>
                 <Settings size={24} color={COLORS.text} />
                 <Text style={styles.menuText}>Settings</Text>

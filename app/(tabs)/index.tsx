@@ -20,9 +20,9 @@ import { LoadingSpinner } from '@/src/components/LoadingSpinner';
 import { SocialFooter } from '@/src/components/SocialFooter';
 import { ChatbotFAB } from '@/src/components/ChatbotFAB';
 import { COLORS, SPACING, TYPOGRAPHY, ZONES, THEMATIC_CATEGORIES } from '@/src/constants/theme';
-import { 
-  Plus, Upload, TrendingUp, ChevronDown, ChevronUp, 
-  BarChart3, Users, Activity, AlertCircle 
+import {
+  Plus, Upload, TrendingUp, ChevronDown, ChevronUp,
+  BarChart3, Users, Activity, AlertCircle
 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
@@ -34,7 +34,6 @@ export default function HomeScreen() {
   const { reports } = useSelector((state: RootState) => state.reports);
 
   const [refreshing, setRefreshing] = useState(false);
-  const [expandedZones, setExpandedZones] = useState<Record<string, boolean>>({});
   const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
@@ -51,34 +50,6 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
-  const toggleZone = (zone: string) => {
-    setExpandedZones((prev) => ({ ...prev, [zone]: !prev[zone] }));
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'low': return COLORS.severityLow;
-      case 'medium': return COLORS.severityMedium;
-      case 'high': return COLORS.severityHigh;
-      case 'critical': return COLORS.severityCritical;
-      default: return COLORS.textSecondary;
-    }
-  };
-
-  const getRecoveryRate = (recovered: number, total: number) => {
-    if (total === 0) return 0;
-    return ((recovered / total) * 100).toFixed(1);
-  };
-
-  const getPositivityRate = (newCases: number, total: number) => {
-    if (total === 0) return 0;
-    return ((newCases / total) * 100).toFixed(1);
-  };
-
-  const getMortalityRate = (deaths: number, total: number) => {
-    if (total === 0) return 0;
-    return ((deaths / total) * 100).toFixed(1);
-  };
 
   // Analytics calculations
   const totalCases = diseases.reduce((sum: number, d: any) => sum + d.total_cases, 0);
@@ -93,11 +64,13 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
+          <Image
+            source={require('../../assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>ISMPH Dashboard</Text>
         <Text style={styles.headerSubtitle}>Welcome, {user?.full_name || user?.email}</Text>
       </View>
@@ -182,123 +155,10 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Disease Tracker */}
+
+        {/* Thematic Area of Focus */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Disease Tracker</Text>
-          {ZONES.map((zone: string) => {
-            const zoneDiseases = diseases.filter((d: any) => d.zone === zone);
-            if (zoneDiseases.length === 0) return null;
-
-            return (
-              <Card key={zone} style={styles.zoneCard} variant="outlined">
-                <TouchableOpacity style={styles.zoneHeader} onPress={() => toggleZone(zone)}>
-                  <View style={styles.zoneHeaderLeft}>
-                    <Text style={styles.zoneTitle}>{zone}</Text>
-                    <Text style={styles.zoneSubtitle}>{zoneDiseases.length} diseases tracked</Text>
-                  </View>
-                  {expandedZones[zone] ? (
-                    <ChevronUp size={24} color={COLORS.textSecondary} />
-                  ) : (
-                    <ChevronDown size={24} color={COLORS.textSecondary} />
-                  )}
-                </TouchableOpacity>
-
-                {expandedZones[zone] && (
-                  <View style={styles.diseaseList}>
-                    {zoneDiseases.map((disease: any) => (
-                      <View key={disease.id} style={styles.diseaseCard}>
-                        <View style={styles.diseaseHeader}>
-                          <Text style={styles.diseaseName}>{disease.disease_name}</Text>
-                          <View
-                            style={[
-                              styles.severityIndicator,
-                              { backgroundColor: getSeverityColor(disease.severity) },
-                            ]}
-                          />
-                        </View>
-                        <Text style={styles.diseaseState}>{disease.state}</Text>
-
-                        <View style={styles.diseaseStats}>
-                          <View style={styles.statItem}>
-                            <Text style={styles.statLabel}>New</Text>
-                            <Text style={[styles.statValue, { color: COLORS.warning }]}>
-                              +{disease.new_cases}
-                            </Text>
-                          </View>
-                          <View style={styles.statItem}>
-                            <Text style={styles.statLabel}>Total</Text>
-                            <Text style={styles.statValue}>{disease.total_cases}</Text>
-                          </View>
-                          <View style={styles.statItem}>
-                            <Text style={styles.statLabel}>Deaths</Text>
-                            <Text style={[styles.statValue, { color: COLORS.error }]}>
-                              {disease.mortality}
-                            </Text>
-                          </View>
-                          <View style={styles.statItem}>
-                            <Text style={styles.statLabel}>Recovered</Text>
-                            <Text style={[styles.statValue, { color: COLORS.success }]}>
-                              {disease.recovered}
-                            </Text>
-                          </View>
-                        </View>
-
-                        {/* Recovery Rate Bar */}
-                        <View style={styles.rateSection}>
-                          <Text style={styles.rateLabel}>Recovery Rate: {getRecoveryRate(disease.recovered, disease.total_cases)}%</Text>
-                          <View style={styles.progressBar}>
-                            <View
-                              style={{
-                                height: '100%',
-                                width: getRecoveryRate(disease.recovered, disease.total_cases) + '%' as any,
-                                backgroundColor: COLORS.success,
-                                borderRadius: 3,
-                              }}
-                            />
-                          </View>
-                        </View>
-
-                        {/* Mortality Rate Bar */}
-                        <View style={styles.rateSection}>
-                          <Text style={styles.rateLabel}>Mortality Rate: {getMortalityRate(disease.mortality, disease.total_cases)}%</Text>
-                          <View style={styles.progressBar}>
-                            <View
-                              style={{
-                                height: '100%',
-                                width: getMortalityRate(disease.mortality, disease.total_cases) + '%' as any,
-                                backgroundColor: COLORS.error,
-                                borderRadius: 3,
-                              }}
-                            />
-                          </View>
-                        </View>
-
-                        {/* Positivity Rate Bar */}
-                        <View style={styles.rateSection}>
-                          <Text style={styles.rateLabel}>Positivity Rate: {getPositivityRate(disease.new_cases, disease.total_cases)}%</Text>
-                          <View style={styles.progressBar}>
-                            <View
-                              style={{
-                                height: '100%',
-                                width: getPositivityRate(disease.new_cases, disease.total_cases) + '%' as any,
-                                backgroundColor: COLORS.warning,
-                                borderRadius: 3,
-                              }}
-                            />
-                          </View>
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </Card>
-            );
-          })}
-        </View>
-
-        {/* Thematic Categories */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thematic Categories</Text>
+          <Text style={styles.sectionTitle}>Thematic Area of Focus</Text>
           <Text style={styles.sectionSubtitle}>Explore health topics and policies</Text>
           <View style={styles.categoriesGrid}>
             {THEMATIC_CATEGORIES.map((category) => (

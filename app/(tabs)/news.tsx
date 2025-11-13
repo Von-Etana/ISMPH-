@@ -14,6 +14,7 @@ import { Card } from '@/src/components/Card';
 import { Badge } from '@/src/components/Badge';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
 import { Search, Share2 } from 'lucide-react-native';
+import { router } from 'expo-router';
 
 interface NewsArticle {
   id: string;
@@ -407,11 +408,13 @@ export default function NewsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image
-          source={require('@/assets/images/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Media Reports</Text>
       </View>
 

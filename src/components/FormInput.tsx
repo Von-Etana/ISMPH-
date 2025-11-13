@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { Eye, EyeOff } from 'lucide-react-native';
 import { COLORS, SPACING, TYPOGRAPHY } from '../constants/theme';
 
 interface FormInputProps {
@@ -8,6 +9,8 @@ interface FormInputProps {
   onChangeText: (text: string) => void;
   error?: string;
   required?: boolean;
+  secureTextEntry?: boolean;
+  showPasswordToggle?: boolean;
   [key: string]: any;
 }
 
@@ -17,8 +20,14 @@ export const FormInput: React.FC<FormInputProps> = ({
   onChangeText,
   error,
   required,
+  secureTextEntry = false,
+  showPasswordToggle = false,
   ...props
 }) => {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const actualSecureTextEntry = secureTextEntry && !isPasswordVisible;
+
   return (
     <View style={styles.container}>
       {label && (
@@ -27,13 +36,28 @@ export const FormInput: React.FC<FormInputProps> = ({
           {required && <Text style={styles.required}> *</Text>}
         </Text>
       )}
-      <TextInput
-        style={[styles.input, error && styles.inputError]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholderTextColor={COLORS.textSecondary}
-        {...props}
-      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={[styles.input, error && styles.inputError, showPasswordToggle && styles.inputWithIcon]}
+          value={value}
+          onChangeText={onChangeText}
+          placeholderTextColor={COLORS.textSecondary}
+          secureTextEntry={actualSecureTextEntry}
+          {...props}
+        />
+        {showPasswordToggle && (
+          <TouchableOpacity
+            style={styles.iconContainer}
+            onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+          >
+            {isPasswordVisible ? (
+              <EyeOff size={20} color={COLORS.textSecondary} />
+            ) : (
+              <Eye size={20} color={COLORS.textSecondary} />
+            )}
+          </TouchableOpacity>
+        )}
+      </View>
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
@@ -52,6 +76,9 @@ const styles = StyleSheet.create({
   required: {
     color: COLORS.error,
   },
+  inputContainer: {
+    position: 'relative',
+  },
   input: {
     ...TYPOGRAPHY.body1,
     backgroundColor: COLORS.surface,
@@ -62,8 +89,18 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     color: COLORS.text,
   },
+  inputWithIcon: {
+    paddingRight: SPACING.xl,
+  },
   inputError: {
     borderColor: COLORS.error,
+  },
+  iconContainer: {
+    position: 'absolute',
+    right: SPACING.sm,
+    top: '50%',
+    transform: [{ translateY: -10 }],
+    padding: SPACING.xs,
   },
   errorText: {
     ...TYPOGRAPHY.caption,

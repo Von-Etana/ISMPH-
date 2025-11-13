@@ -71,7 +71,6 @@ export default function ReportsScreen() {
     state: user?.state || 'Lagos',
     priority: 'medium' as 'low' | 'medium' | 'high',
     reporterName: user?.full_name || '',
-    reporterEmail: user?.email || '',
     reporterPhone: '',
     reporterAddress: '',
   });
@@ -128,20 +127,41 @@ export default function ReportsScreen() {
   };
 
   const handleSubmit = () => {
-    if (!formData.title || !formData.description) {
-      Toast.show({
-        type: 'error',
-        text1: 'Missing Information',
-        text2: 'Please fill in all required fields',
-      });
-      return;
+    const errors: string[] = [];
+
+    if (!formData.title.trim()) {
+      errors.push('Report title is required');
     }
 
-    if (!formData.reporterName || !formData.reporterEmail) {
+    if (!formData.description.trim()) {
+      errors.push('Report description is required');
+    }
+
+    if (!formData.category) {
+      errors.push('Please select a category');
+    }
+
+    if (!formData.state) {
+      errors.push('Please select a state');
+    }
+
+    if (!formData.priority) {
+      errors.push('Please select a priority level');
+    }
+
+    if (!formData.reporterName.trim()) {
+      errors.push('Your full name is required');
+    }
+
+    if (formData.reporterPhone && !/^\d{10,15}$/.test(formData.reporterPhone.replace(/\D/g, ''))) {
+      errors.push('Please enter a valid phone number');
+    }
+
+    if (errors.length > 0) {
       Toast.show({
         type: 'error',
-        text1: 'Contact Information Required',
-        text2: 'Please provide your name and email',
+        text1: 'Incomplete Form',
+        text2: errors[0], // Show first error
       });
       return;
     }
@@ -160,7 +180,6 @@ export default function ReportsScreen() {
       state: user?.state || 'Lagos',
       priority: 'medium',
       reporterName: user?.full_name || '',
-      reporterEmail: user?.email || '',
       reporterPhone: '',
       reporterAddress: '',
     });
@@ -189,11 +208,13 @@ export default function ReportsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image
-          source={require('@/assets/images/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>PHC State Reports</Text>
         <Text style={styles.headerSubtitle}>Submit and track facility reports</Text>
       </View>
@@ -341,15 +362,6 @@ export default function ReportsScreen() {
               required
             />
 
-            <FormInput
-              label="Email Address"
-              value={formData.reporterEmail}
-              onChangeText={(text) => setFormData({ ...formData, reporterEmail: text })}
-              placeholder="your.email@example.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              required
-            />
 
             <FormInput
               label="Phone Number"

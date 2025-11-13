@@ -26,13 +26,12 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [role, setRole] = useState('public');
   const [state, setState] = useState('Lagos');
 
   const handleAuth = async () => {
     try {
       if (isSignUp) {
-        await dispatch(signUp({ email, password, fullName, role, state })).unwrap();
+        await dispatch(signUp({ email, password, fullName, state })).unwrap();
         Toast.show({
           type: 'success',
           text1: 'Account Created',
@@ -89,6 +88,7 @@ export default function AuthScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            showPasswordToggle
             required
           />
 
@@ -101,22 +101,6 @@ export default function AuthScreen() {
                 required
               />
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Role</Text>
-                <View style={styles.roleButtons}>
-                  {['public', 'staff', 'admin'].map((r) => (
-                    <TouchableOpacity
-                      key={r}
-                      style={[styles.roleButton, role === r && styles.roleButtonActive]}
-                      onPress={() => setRole(r)}
-                    >
-                      <Text style={[styles.roleText, role === r && styles.roleTextActive]}>
-                        {r.charAt(0).toUpperCase() + r.slice(1)}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>State</Text>
