@@ -210,7 +210,7 @@ export default function ReportsScreen() {
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
           <Image
-            source={require('@/assets/images/logo.png')}
+            source={require('@/assets/images/WhatsApp Image 2025-11-08 at 09.39.48_7cb724fe.png')}
             style={styles.logo}
             resizeMode="contain"
           />
