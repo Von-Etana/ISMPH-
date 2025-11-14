@@ -8,11 +8,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  Modal,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { signIn, signUp } from '@/src/store/slices/authSlice';
 import { AppDispatch, RootState } from '@/src/store';
+import { supabase } from '@/src/services/supabase';
 import { FormInput } from '@/src/components/FormInput';
 import { Button } from '@/src/components/Button';
 import { COLORS, SPACING, TYPOGRAPHY, STATES } from '@/src/constants/theme';
@@ -27,6 +29,7 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [state, setState] = useState('Lagos');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleAuth = async () => {
     try {
@@ -51,6 +54,38 @@ export default function AuthScreen() {
         type: 'error',
         text1: 'Authentication Error',
         text2: err || 'Please try again',
+      });
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Email Required',
+        text2: 'Please enter your email address',
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'ismph://reset-password',
+      });
+
+      if (error) throw error;
+
+      Toast.show({
+        type: 'success',
+        text1: 'Reset Email Sent',
+        text2: 'Check your email for password reset instructions',
+      });
+      setShowForgotPassword(false);
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Reset Failed',
+        text2: error.message || 'Please try again',
       });
     }
   };
@@ -91,6 +126,12 @@ export default function AuthScreen() {
             showPasswordToggle
             required
           />
+
+          {!isSignUp && (
+            <TouchableOpacity onPress={() => setShowForgotPassword(true)} style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            </TouchableOpacity>
+          )}
 
           {isSignUp && (
             <>
@@ -137,6 +178,41 @@ export default function AuthScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <Modal visible={showForgotPassword} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Reset Password</Text>
+            <Text style={styles.modalSubtitle}>
+              Enter your email address and we'll send you a link to reset your password.
+            </Text>
+
+            <FormInput
+              label="Email Address"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              placeholder="your.email@example.com"
+              required
+            />
+
+            <View style={styles.modalActions}>
+              <Button
+                title="Cancel"
+                onPress={() => setShowForgotPassword(false)}
+                variant="outline"
+                style={{ flex: 1, marginRight: SPACING.sm }}
+              />
+              <Button
+                title="Send Reset Link"
+                onPress={handleForgotPassword}
+                style={{ flex: 1 }}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -226,5 +302,45 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     textAlign: 'center',
     marginTop: SPACING.md,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginTop: SPACING.xs,
+    marginBottom: SPACING.md,
+  },
+  forgotPasswordText: {
+    ...TYPOGRAPHY.body2,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.lg,
+  },
+  modalContent: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: SPACING.lg,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    ...TYPOGRAPHY.h3,
+    color: COLORS.text,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  modalSubtitle: {
+    ...TYPOGRAPHY.body2,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    marginTop: SPACING.lg,
   },
 });

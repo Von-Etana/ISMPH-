@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Dimensions,
   Image,
+  Linking,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { router } from 'expo-router';
@@ -20,9 +21,10 @@ import { LoadingSpinner } from '@/src/components/LoadingSpinner';
 import { SocialFooter } from '@/src/components/SocialFooter';
 import { ChatbotFAB } from '@/src/components/ChatbotFAB';
 import { COLORS, SPACING, TYPOGRAPHY, ZONES, THEMATIC_CATEGORIES } from '@/src/constants/theme';
+import { getNewsByCategory } from '@/src/constants/newsData';
 import {
   Plus, Upload, TrendingUp, ChevronDown, ChevronUp,
-  BarChart3, Users, Activity, AlertCircle
+  BarChart3, Users, Activity, AlertCircle, Share2
 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
@@ -162,15 +164,31 @@ export default function HomeScreen() {
           <Text style={styles.sectionSubtitle}>Explore health topics and policies</Text>
           <View style={styles.categoriesGrid}>
             {THEMATIC_CATEGORIES.map((category) => (
-              <Card key={category.id} style={styles.categoryCard} variant="outlined">
-                <View style={[styles.categoryIcon, { backgroundColor: category.color + '20' }]}>
-                  <Text style={styles.categoryEmoji}>{category.icon}</Text>
-                </View>
-                <Text style={styles.categoryName}>{category.name}</Text>
-                <Text style={styles.categoryDescription} numberOfLines={2}>
-                  {category.description}
-                </Text>
-              </Card>
+              <TouchableOpacity
+                key={category.id}
+                onPress={() => {
+                  // Navigate to news page with category filter
+                  router.push({
+                    pathname: '/news',
+                    params: { category: category.name }
+                  });
+                }}
+              >
+                <Card style={styles.categoryCard} variant="outlined">
+                  <View style={[styles.categoryIcon, { backgroundColor: category.color + '20' }]}>
+                    <Text style={styles.categoryEmoji}>{category.icon}</Text>
+                  </View>
+                  <Text style={styles.categoryName}>{category.name}</Text>
+                  <Text style={styles.categoryDescription} numberOfLines={2}>
+                    {category.description}
+                  </Text>
+                  <View style={styles.categoryNewsCount}>
+                    <Text style={styles.categoryNewsCountText}>
+                      {getNewsByCategory(category.name).length} articles
+                    </Text>
+                  </View>
+                </Card>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
@@ -212,7 +230,20 @@ export default function HomeScreen() {
               <Card key={report.id} style={styles.reportCard} variant="elevated">
                 <View style={styles.reportHeader}>
                   <Text style={styles.reportTitle}>{report.title}</Text>
-                  <Badge label={report.priority} type="priority" variant={report.priority} />
+                  <View style={styles.reportHeaderRight}>
+                    <Badge label={report.priority} type="priority" variant={report.priority} />
+                    <TouchableOpacity
+                      onPress={() => {
+                        const message = `${report.title}\n\n${report.description}\n\nShared from ISMPH`;
+                        Linking.openURL(`whatsapp://send?text=${encodeURIComponent(message)}`).catch(() => {
+                          Linking.openURL(`mailto:?subject=${encodeURIComponent(report.title)}&body=${encodeURIComponent(report.description)}`);
+                        });
+                      }}
+                      style={styles.shareButton}
+                    >
+                      <Share2 size={16} color={COLORS.textSecondary} />
+                    </TouchableOpacity>
+                  </View>
                 </View>
                 <Text style={styles.reportMeta}>
                   {report.state} • {new Date(report.created_at).toLocaleDateString()}
@@ -287,6 +318,8 @@ const styles = StyleSheet.create({
   categoryEmoji: { fontSize: 24 },
   categoryName: { ...TYPOGRAPHY.body2, fontWeight: '600', marginBottom: SPACING.xs },
   categoryDescription: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  categoryNewsCount: { marginTop: SPACING.xs },
+  categoryNewsCountText: { ...TYPOGRAPHY.caption, color: COLORS.primary, fontWeight: '600' },
   
   // Policy
   policyCard: { marginBottom: SPACING.md },
@@ -296,7 +329,9 @@ const styles = StyleSheet.create({
   // Reports
   reportCard: { marginBottom: SPACING.md },
   reportHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.xs },
+  reportHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   reportTitle: { ...TYPOGRAPHY.body1, fontWeight: '600', flex: 1, marginRight: SPACING.sm },
   reportMeta: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginBottom: SPACING.xs },
   reportDescription: { ...TYPOGRAPHY.body2, color: COLORS.text },
+  shareButton: { padding: SPACING.xs },
 });

@@ -82,7 +82,7 @@ export default function SettingsScreen() {
                 <User size={32} color={COLORS.white} />
               </View>
               <View style={styles.userDetails}>
-                <Text style={styles.userName}>{user?.full_name || 'User'}</Text>
+                <Text style={styles.userName}>{user?.full_name || user?.email?.split('@')[0] || 'User'}</Text>
                 <Text style={styles.userEmail}>{user?.email}</Text>
                 <Text style={styles.userRole}>{user?.role?.toUpperCase()}</Text>
               </View>

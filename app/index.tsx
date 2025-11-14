@@ -10,7 +10,7 @@ export default function Index() {
   }
 
   // Redirect admin users to admin dashboard
-  if (user?.role === 'admin') {
+  if (user?.role === 'admin' || user?.role === 'state_admin') {
     return <Redirect href="/admin/index" />;
   }
 

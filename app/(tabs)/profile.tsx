@@ -97,7 +97,7 @@ export default function ProfileScreen() {
               </View>
             </TouchableOpacity>
           </View>
-          <Text style={styles.name}>{user?.full_name || 'User'}</Text>
+          <Text style={styles.name}>{user?.full_name || user?.email?.split('@')[0] || 'User'}</Text>
           <Text style={styles.email}>{user?.email}</Text>
           <View style={styles.roleContainer}>
             <Text style={styles.role}>{user?.role?.toUpperCase()}</Text>
@@ -121,13 +121,13 @@ export default function ProfileScreen() {
             <TouchableOpacity style={styles.menuItem} onPress={() => {
               // Cycle through languages: English -> Igbo -> Yoruba -> Hausa -> English
               const languages = ['English', 'Igbo', 'Yoruba', 'Hausa'];
-              const currentIndex = languages.indexOf('English'); // Default to English
+              const currentIndex = languages.indexOf('English'); // Default to English for now
               const nextIndex = (currentIndex + 1) % languages.length;
               const nextLanguage = languages[nextIndex];
               Toast.show({
                 type: 'info',
                 text1: 'Language Changed',
-                text2: `Switched to ${nextLanguage}. Full translation coming soon.`,
+                text2: `Switched to ${nextLanguage}. Full app translation will be implemented soon.`,
               });
             }}>
               <View style={styles.menuLeft}>

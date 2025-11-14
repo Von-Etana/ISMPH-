@@ -9,8 +9,9 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/src/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '@/src/store';
+import { submitReport } from '@/src/store/slices/reportsSlice';
 import { Card } from '@/src/components/Card';
 import { Button } from '@/src/components/Button';
 import { FormInput } from '@/src/components/FormInput';
@@ -59,7 +60,9 @@ const DEMO_REPORTS = [
 ];
 
 export default function ReportsScreen() {
+  const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
+  const { loading } = useSelector((state: RootState) => state.reports);
   const [showForm, setShowForm] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'all' | 'my' | 'pending'>('all');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
@@ -126,7 +129,7 @@ export default function ReportsScreen() {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const errors: string[] = [];
 
     if (!formData.title.trim()) {
@@ -166,23 +169,37 @@ export default function ReportsScreen() {
       return;
     }
 
-    Toast.show({
-      type: 'success',
-      text1: 'Report Submitted',
-      text2: `Your report has been submitted with ${selectedImages.length} media attachments`,
-    });
-    setShowForm(false);
-    setSelectedImages([]);
-    setFormData({
-      title: '',
-      category: 'Service Quality',
-      description: '',
-      state: user?.state || 'Lagos',
-      priority: 'medium',
-      reporterName: user?.full_name || '',
-      reporterPhone: '',
-      reporterAddress: '',
-    });
+    try {
+      await dispatch(submitReport({
+        ...formData,
+        reporterEmail: user?.email || '', // Auto-populate from user
+        mediaAttachments: selectedImages,
+      })).unwrap();
+
+      Toast.show({
+        type: 'success',
+        text1: 'Report Submitted',
+        text2: `Your report has been submitted to the ${formData.state} program officer`,
+      });
+      setShowForm(false);
+      setSelectedImages([]);
+      setFormData({
+        title: '',
+        category: 'Service Quality',
+        description: '',
+        state: user?.state || 'Lagos',
+        priority: 'medium',
+        reporterName: user?.full_name || '',
+        reporterPhone: '',
+        reporterAddress: '',
+      });
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Submission Failed',
+        text2: error || 'Please try again',
+      });
+    }
   };
 
   const renderReport = (report: any) => (
@@ -415,7 +432,7 @@ export default function ReportsScreen() {
 
             <View style={styles.formActions}>
               <Button title="Cancel" onPress={() => setShowForm(false)} variant="outline" style={{ flex: 1, marginRight: SPACING.sm }} />
-              <Button title="Submit Report" onPress={handleSubmit} style={{ flex: 1 }} />
+              <Button title="Submit Report" onPress={handleSubmit} loading={loading} style={{ flex: 1 }} />
             </View>
           </ScrollView>
         </View>
