@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { router } from 'expo-router';
 import { RootState, AppDispatch } from '@/src/store';
@@ -7,12 +7,14 @@ import { signOut } from '@/src/store/slices/authSlice';
 import { Card } from '@/src/components/Card';
 import { Button } from '@/src/components/Button';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
-import { User, Settings, LogOut, Bell, Globe } from 'lucide-react-native';
+import { User, Settings, LogOut, Bell, Globe, Camera } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     try {
@@ -28,6 +30,40 @@ export default function ProfileScreen() {
         type: 'error',
         text1: 'Error',
         text2: 'Failed to sign out',
+      });
+    }
+  };
+
+  const requestPermissions = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permission Required',
+        'Camera roll permissions are needed to select a profile picture.',
+        [{ text: 'OK' }]
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const pickImage = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets && result.assets[0]) {
+      setProfileImage(result.assets[0].uri);
+      Toast.show({
+        type: 'success',
+        text1: 'Profile Picture Updated',
+        text2: 'Your profile picture has been changed',
       });
     }
   };
@@ -48,9 +84,18 @@ export default function ProfileScreen() {
       <ScrollView style={styles.content}>
         <Card style={styles.profileCard} variant="elevated">
           <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <User size={48} color={COLORS.white} />
-            </View>
+            <TouchableOpacity style={styles.avatarWrapper} onPress={pickImage}>
+              {profileImage ? (
+                <Image source={{ uri: profileImage }} style={styles.avatar} />
+              ) : (
+                <View style={styles.avatar}>
+                  <User size={48} color={COLORS.white} />
+                </View>
+              )}
+              <View style={styles.cameraButton}>
+                <Camera size={16} color={COLORS.white} />
+              </View>
+            </TouchableOpacity>
           </View>
           <Text style={styles.name}>{user?.full_name || 'User'}</Text>
           <Text style={styles.email}>{user?.email}</Text>
@@ -138,6 +183,9 @@ const styles = StyleSheet.create({
   avatarContainer: {
     marginBottom: SPACING.md,
   },
+  avatarWrapper: {
+    position: 'relative',
+  },
   avatar: {
     width: 100,
     height: 100,
@@ -145,6 +193,19 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  cameraButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.white,
   },
   name: {
     ...TYPOGRAPHY.h3,

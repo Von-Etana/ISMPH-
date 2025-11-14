@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { RootState, AppDispatch } from '@/src/store';
 import { Card } from '@/src/components/Card';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
-import { ArrowLeft, User, Bell, Globe, Shield, HelpCircle, LogOut } from 'lucide-react-native';
+import { ArrowLeft, User, Globe, HelpCircle, LogOut } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 
 export default function SettingsScreen() {
@@ -31,19 +31,6 @@ export default function SettingsScreen() {
       action: () => router.push('/profile'),
     },
     {
-      id: 'notifications',
-      title: 'Notifications',
-      subtitle: 'Manage notification preferences',
-      icon: Bell,
-      action: () => {
-        Toast.show({
-          type: 'info',
-          text1: 'Coming Soon',
-          text2: 'Notification settings will be available soon',
-        });
-      },
-    },
-    {
       id: 'language',
       title: 'Language',
       subtitle: 'Change app language',
@@ -53,19 +40,6 @@ export default function SettingsScreen() {
           type: 'info',
           text1: 'Coming Soon',
           text2: 'Language settings will be available soon',
-        });
-      },
-    },
-    {
-      id: 'privacy',
-      title: 'Privacy & Security',
-      subtitle: 'Manage your privacy settings',
-      icon: Shield,
-      action: () => {
-        Toast.show({
-          type: 'info',
-          text1: 'Coming Soon',
-          text2: 'Privacy settings will be available soon',
         });
       },
     },
