@@ -8,6 +8,7 @@ import {
   Modal,
   Alert,
   Image,
+  Dimensions,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/src/store';
@@ -18,9 +19,11 @@ import { FormInput } from '@/src/components/FormInput';
 import { Badge } from '@/src/components/Badge';
 import { SocialFooter } from '@/src/components/SocialFooter';
 import { COLORS, SPACING, TYPOGRAPHY, STATES } from '@/src/constants/theme';
-import { Plus, FileText, Clock, CheckCircle, XCircle, Camera, Image as ImageIcon, Trash2 } from 'lucide-react-native';
+import { Plus, FileText, Clock, CheckCircle, XCircle, Camera, Image as ImageIcon, Trash2, BarChart3, TrendingUp, Users, MessageSquare, Activity, Calendar, MapPin, PieChart } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
+
+const { width } = Dimensions.get('window');
 
 const CATEGORIES = [
   'Service Quality',
@@ -59,12 +62,46 @@ const DEMO_REPORTS = [
   },
 ];
 
+// Analytics data
+const ANALYTICS_DATA = {
+  overview: {
+    totalReports: 2,
+    pendingReports: 1,
+    approvedReports: 1,
+    totalUsers: 150,
+  },
+  trends: {
+    monthlyReports: [
+      { month: 'Aug', reports: 12 },
+      { month: 'Sep', reports: 18 },
+      { month: 'Oct', reports: 2 },
+    ],
+  },
+  byState: [
+    { state: 'Lagos', reports: 1, percentage: 50 },
+    { state: 'Abuja', reports: 1, percentage: 50 },
+  ],
+  byCategory: [
+    { category: 'Service Quality', count: 1, percentage: 50 },
+    { category: 'Equipment Shortage', count: 1, percentage: 50 },
+  ],
+  byPriority: [
+    { priority: 'High', count: 1, percentage: 50 },
+    { priority: 'Medium', count: 0, percentage: 0 },
+    { priority: 'Low', count: 1, percentage: 50 },
+  ],
+  byStatus: [
+    { status: 'Pending', count: 1, percentage: 50 },
+    { status: 'Approved', count: 1, percentage: 50 },
+  ],
+};
+
 export default function ReportsScreen() {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { loading } = useSelector((state: RootState) => state.reports);
   const [showForm, setShowForm] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<'all' | 'my' | 'pending'>('all');
+  const [selectedTab, setSelectedTab] = useState<'all' | 'my' | 'pending' | 'analytics'>('all');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
@@ -211,15 +248,57 @@ export default function ReportsScreen() {
         </View>
         <Text style={styles.reportDate}>{new Date(report.createdAt).toLocaleDateString()}</Text>
       </View>
-      
+
       <Text style={styles.reportTitle}>{report.title}</Text>
       <Text style={styles.reportCategory}>{report.category} • {report.state}</Text>
       <Text style={styles.reportDescription} numberOfLines={2}>{report.description}</Text>
-      
+
       {report.contactName && (
         <Text style={styles.reportContact}>Contact: {report.contactName}</Text>
       )}
     </Card>
+  );
+
+  const renderMetricCard = (title: string, value: number, IconComponent: any, color: string) => (
+    <Card style={styles.metricCard} variant="elevated">
+      <View style={styles.metricIcon}>
+        <IconComponent size={24} color={color} />
+      </View>
+      <Text style={styles.metricValue}>{value.toLocaleString()}</Text>
+      <Text style={styles.metricTitle}>{title}</Text>
+    </Card>
+  );
+
+  const renderChartBar = (data: any, maxValue: number) => (
+    <View key={data.month || data.category || data.state} style={styles.chartBar}>
+      <View style={styles.barContainer}>
+        <View
+          style={[styles.barFill, {
+            width: `${(data.reports || data.count || data.percentage) / maxValue * 100}%`,
+            backgroundColor: COLORS.primary
+          }]}
+        />
+      </View>
+      <Text style={styles.barLabel}>{data.month || data.category || data.state}</Text>
+      <Text style={styles.barValue}>{data.reports || data.count || data.percentage}</Text>
+    </View>
+  );
+
+  const renderPieSegment = (data: any, total: number) => (
+    <View key={data.category || data.priority || data.status} style={styles.pieSegment}>
+      <View style={styles.segmentInfo}>
+        <Text style={styles.segmentLabel}>{data.category || data.priority || data.status}</Text>
+        <Text style={styles.segmentValue}>{data.count} ({data.percentage}%)</Text>
+      </View>
+      <View style={styles.segmentBar}>
+        <View
+          style={[styles.segmentFill, {
+            width: `${data.percentage}%`,
+            backgroundColor: COLORS.primary
+          }]}
+        />
+      </View>
+    </View>
   );
 
   return (
@@ -255,38 +334,132 @@ export default function ReportsScreen() {
         >
           <Text style={[styles.tabText, selectedTab === 'pending' && styles.tabTextActive]}>Pending</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, selectedTab === 'analytics' && styles.tabActive]}
+          onPress={() => setSelectedTab('analytics')}
+        >
+          <Text style={[styles.tabText, selectedTab === 'analytics' && styles.tabTextActive]}>Analytics</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content}>
-        <View style={styles.statsRow}>
-          <Card style={styles.statCard} variant="elevated">
-            <FileText size={24} color={COLORS.info} />
-            <Text style={styles.statValue}>2</Text>
-            <Text style={styles.statLabel}>Total</Text>
-          </Card>
-          <Card style={styles.statCard} variant="elevated">
-            <Clock size={24} color={COLORS.warning} />
-            <Text style={styles.statValue}>1</Text>
-            <Text style={styles.statLabel}>Pending</Text>
-          </Card>
-          <Card style={styles.statCard} variant="elevated">
-            <CheckCircle size={24} color={COLORS.success} />
-            <Text style={styles.statValue}>1</Text>
-            <Text style={styles.statLabel}>Approved</Text>
-          </Card>
-        </View>
+        {selectedTab === 'analytics' ? (
+          <>
+            {/* Analytics Overview */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Reports Analytics</Text>
+              <View style={styles.metricsGrid}>
+                {renderMetricCard('Total Reports', ANALYTICS_DATA.overview.totalReports, FileText, COLORS.info)}
+                {renderMetricCard('Pending Reports', ANALYTICS_DATA.overview.pendingReports, Clock, COLORS.warning)}
+                {renderMetricCard('Approved Reports', ANALYTICS_DATA.overview.approvedReports, CheckCircle, COLORS.success)}
+                {renderMetricCard('Active Users', ANALYTICS_DATA.overview.totalUsers, Users, COLORS.primary)}
+              </View>
+            </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Reports</Text>
-          {DEMO_REPORTS.map(renderReport)}
-        </View>
+            {/* Monthly Trends */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Monthly Trends</Text>
+              <Card style={styles.chartCard} variant="elevated">
+                <Text style={styles.chartTitle}>Reports Over Time</Text>
+                <View style={styles.chartContainer}>
+                  {ANALYTICS_DATA.trends.monthlyReports.map(data =>
+                    renderChartBar(data, Math.max(...ANALYTICS_DATA.trends.monthlyReports.map(d => d.reports)))
+                  )}
+                </View>
+              </Card>
+            </View>
 
-        <SocialFooter />
+            {/* Distribution by State */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Reports by State</Text>
+              <Card style={styles.chartCard} variant="outlined">
+                {ANALYTICS_DATA.byState.map(data =>
+                  renderChartBar(data, Math.max(...ANALYTICS_DATA.byState.map(d => d.reports)))
+                )}
+              </Card>
+            </View>
+
+            {/* Category Distribution */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Reports by Category</Text>
+              <Card style={styles.chartCard} variant="outlined">
+                {ANALYTICS_DATA.byCategory.map(data =>
+                  renderPieSegment(data, ANALYTICS_DATA.overview.totalReports)
+                )}
+              </Card>
+            </View>
+
+            {/* Priority Distribution */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Reports by Priority</Text>
+              <Card style={styles.chartCard} variant="outlined">
+                {ANALYTICS_DATA.byPriority.map(data =>
+                  renderPieSegment(data, ANALYTICS_DATA.overview.totalReports)
+                )}
+              </Card>
+            </View>
+
+            {/* Status Distribution */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Reports by Status</Text>
+              <Card style={styles.chartCard} variant="outlined">
+                {ANALYTICS_DATA.byStatus.map(data =>
+                  renderPieSegment(data, ANALYTICS_DATA.overview.totalReports)
+                )}
+              </Card>
+            </View>
+          </>
+        ) : (
+          <>
+            <View style={styles.statsRow}>
+              <TouchableOpacity onPress={() => setSelectedTab('all')}>
+                <Card style={styles.statCard} variant="elevated">
+                  <FileText size={24} color={COLORS.info} />
+                  <Text style={styles.statValue}>{ANALYTICS_DATA.overview.totalReports}</Text>
+                  <Text style={styles.statLabel}>Total</Text>
+                </Card>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setSelectedTab('pending')}>
+                <Card style={styles.statCard} variant="elevated">
+                  <Clock size={24} color={COLORS.warning} />
+                  <Text style={styles.statValue}>{ANALYTICS_DATA.overview.pendingReports}</Text>
+                  <Text style={styles.statLabel}>Pending</Text>
+                </Card>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setSelectedTab('all')}>
+                <Card style={styles.statCard} variant="elevated">
+                  <CheckCircle size={24} color={COLORS.success} />
+                  <Text style={styles.statValue}>{ANALYTICS_DATA.overview.approvedReports}</Text>
+                  <Text style={styles.statLabel}>Approved</Text>
+                </Card>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                {selectedTab === 'all' ? 'All Reports' :
+                 selectedTab === 'my' ? 'My Reports' :
+                 selectedTab === 'pending' ? 'Pending Reports' : 'Reports'}
+              </Text>
+              {DEMO_REPORTS
+                .filter(report => {
+                  if (selectedTab === 'pending') return report.status === 'pending';
+                  if (selectedTab === 'my') return report.reporterName === user?.full_name;
+                  return true;
+                })
+                .map(renderReport)}
+            </View>
+
+            <SocialFooter />
+          </>
+        )}
       </ScrollView>
 
-      <TouchableOpacity style={styles.fab} onPress={() => setShowForm(true)}>
-        <Plus size={24} color={COLORS.white} />
-      </TouchableOpacity>
+      {selectedTab !== 'analytics' && (
+        <TouchableOpacity style={styles.fab} onPress={() => setShowForm(true)}>
+          <Plus size={24} color={COLORS.white} />
+        </TouchableOpacity>
+      )}
 
       <Modal visible={showForm} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modalContainer}>
@@ -495,4 +668,27 @@ const styles = StyleSheet.create({
   imagePreview: { width: 100, height: 100, borderRadius: 8 },
   removeButton: { position: 'absolute', top: -8, right: -8, width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.error, alignItems: 'center', justifyContent: 'center' },
   formActions: { flexDirection: 'row', marginTop: SPACING.lg, marginBottom: SPACING.xl },
+
+  // Analytics styles
+  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
+  metricCard: { flex: 1, minWidth: (width - SPACING.md * 3) / 2, padding: SPACING.md, alignItems: 'center' },
+  metricIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.surface, alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.sm },
+  metricValue: { ...TYPOGRAPHY.h2, color: COLORS.text, marginTop: SPACING.xs },
+  metricTitle: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, textAlign: 'center' },
+
+  chartCard: { padding: SPACING.md },
+  chartTitle: { ...TYPOGRAPHY.body1, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.md },
+  chartContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 120, paddingHorizontal: SPACING.md },
+  chartBar: { alignItems: 'center', flex: 1 },
+  barContainer: { width: 30, height: 100, justifyContent: 'flex-end', marginBottom: SPACING.sm },
+  barFill: { height: '100%', borderRadius: 4 },
+  barLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  barValue: { ...TYPOGRAPHY.caption, color: COLORS.text, fontWeight: '600', marginTop: SPACING.xs },
+
+  pieSegment: { marginBottom: SPACING.md },
+  segmentInfo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm },
+  segmentLabel: { ...TYPOGRAPHY.body2, color: COLORS.text },
+  segmentValue: { ...TYPOGRAPHY.body2, fontWeight: '600', color: COLORS.primary },
+  segmentBar: { height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
+  segmentFill: { height: '100%', borderRadius: 4 },
 });
