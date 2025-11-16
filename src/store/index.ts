@@ -3,6 +3,7 @@ import authReducer from './slices/authSlice';
 import reportsReducer from './slices/reportsSlice';
 import diseasesReducer from './slices/diseasesSlice';
 import adminReducer from './slices/adminSlice';
+import newsReducer from './slices/newsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     reports: reportsReducer,
     diseases: diseasesReducer,
     admin: adminReducer,
+    news: newsReducer,
   },
 });
 

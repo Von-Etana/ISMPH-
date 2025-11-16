@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,9 +14,13 @@ import {
 import { Card } from '@/src/components/Card';
 import { Badge } from '@/src/components/Badge';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
-import { Search, Share2, ExternalLink } from 'lucide-react-native';
+import { Search, Share2, ExternalLink, RefreshCw } from 'lucide-react-native';
 import { ALL_NEWS_DATA, NewsArticle, getNewsByCategory } from '@/src/constants/newsData';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '@/src/store';
+import { fetchNewsFromAPI, fetchTopHeadlines, searchNews, setArticles } from '@/src/store/slices/newsSlice';
+import Toast from 'react-native-toast-message';
 
 
 const DEMO_NEWS: NewsArticle[] = ALL_NEWS_DATA;
@@ -39,21 +43,88 @@ const CATEGORIES = [
 
 export default function NewsScreen() {
   const { category: initialCategory } = useLocalSearchParams<{ category?: string }>();
+  const dispatch = useDispatch<AppDispatch>();
+  const { articles: newsArticles, loading: newsLoading, error: newsError } = useSelector((state: RootState) => state.news);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'All');
   const [selectedPriority, setSelectedPriority] = useState<string>('All');
   const [selectedState, setSelectedState] = useState<string>('All');
   const [refreshing, setRefreshing] = useState(false);
+  const [useLiveNews, setUseLiveNews] = useState(false);
+
+  // Use live news from API if available, otherwise fall back to static data
+  const currentNewsData = useLiveNews && newsArticles.length > 0 ? newsArticles : DEMO_NEWS;
+
+  useEffect(() => {
+    // Optionally fetch news on component mount
+    // dispatch(fetchTopHeadlines());
+  }, [dispatch]);
 
   const onRefresh = async () => {
     setRefreshing(true);
+    if (useLiveNews) {
+      try {
+        await dispatch(fetchTopHeadlines()).unwrap();
+        Toast.show({
+          type: 'success',
+          text1: 'News Updated',
+          text2: 'Latest health news fetched successfully',
+        });
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Update Failed',
+          text2: 'Could not fetch latest news',
+        });
+      }
+    }
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const filteredNews = DEMO_NEWS.filter((article) => {
+  const handleFetchLiveNews = async () => {
+    try {
+      await dispatch(fetchTopHeadlines()).unwrap();
+      setUseLiveNews(true);
+      Toast.show({
+        type: 'success',
+        text1: 'Live News Loaded',
+        text2: 'Showing latest health news from NewsAPI',
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to Load News',
+        text2: 'Could not fetch news from NewsAPI',
+      });
+    }
+  };
+
+  const handleSearchNews = async () => {
+    if (searchQuery.trim()) {
+      try {
+        await dispatch(searchNews({ query: searchQuery + ' health Nigeria' })).unwrap();
+        setUseLiveNews(true);
+        Toast.show({
+          type: 'success',
+          text1: 'Search Results',
+          text2: `Found news articles for "${searchQuery}"`,
+        });
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Search Failed',
+          text2: 'Could not search news articles',
+        });
+      }
+    }
+  };
+
+  const filteredNews = currentNewsData.filter((article) => {
     const matchesSearch =
       searchQuery === '' ||
-      article.title.toLowerCase().includes(searchQuery.toLowerCase());
+      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      article.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || article.category === selectedCategory;
     const matchesPriority = selectedPriority === 'All' || article.priority === selectedPriority;
     const matchesState = selectedState === 'All' || article.state === selectedState;
@@ -127,6 +198,16 @@ export default function NewsScreen() {
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Media Reports</Text>
+        <TouchableOpacity
+          onPress={handleFetchLiveNews}
+          disabled={newsLoading}
+          style={styles.liveNewsButton}
+        >
+          <RefreshCw size={20} color={newsLoading ? COLORS.textSecondary : COLORS.primary} />
+          <Text style={[styles.liveNewsText, { color: newsLoading ? COLORS.textSecondary : COLORS.primary }]}>
+            {newsLoading ? 'Loading...' : 'Live News'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.searchSection}>
@@ -200,9 +281,11 @@ export default function NewsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20, alignItems: 'center' },
+  header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   logo: { width: 60, height: 60, marginBottom: SPACING.sm },
-  headerTitle: { ...TYPOGRAPHY.h2, color: COLORS.white },
+  headerTitle: { ...TYPOGRAPHY.h2, color: COLORS.white, flex: 1, textAlign: 'center' },
+  liveNewsButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white + '20', paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm, borderRadius: 20 },
+  liveNewsText: { ...TYPOGRAPHY.caption, fontWeight: '600', marginLeft: SPACING.xs },
   searchSection: { backgroundColor: COLORS.white, padding: SPACING.md, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface, borderRadius: 8, paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm, marginBottom: SPACING.sm },
   searchInput: { flex: 1, marginLeft: SPACING.sm, ...TYPOGRAPHY.body1, color: COLORS.text },
