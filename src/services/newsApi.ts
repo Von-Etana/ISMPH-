@@ -61,7 +61,8 @@ class NewsAPIService {
     pageSize: number = 10
   ): Promise<NewsArticle[]> {
     try {
-      const url = `${NEWS_API_BASE_URL}/top-headlines?country=${country}&category=${category}&apiKey=${NEWS_API_KEY}&pageSize=${pageSize}`;
+      // Use 'everything' endpoint instead of 'top-headlines' for better results
+      const url = `${NEWS_API_BASE_URL}/everything?q=health+Nigeria&apiKey=${NEWS_API_KEY}&pageSize=${pageSize}&sortBy=publishedAt&language=en`;
 
       const response = await fetch(url);
       const data: NewsAPIResponse = await response.json();

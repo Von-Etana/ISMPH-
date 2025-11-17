@@ -101,7 +101,7 @@ export default function ReportsScreen() {
   const { user } = useSelector((state: RootState) => state.auth);
   const { loading } = useSelector((state: RootState) => state.reports);
   const [showForm, setShowForm] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<'all' | 'my' | 'pending' | 'analytics'>('all');
+  const [selectedTab, setSelectedTab] = useState<'all' | 'my' | 'pending'>('all');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
@@ -334,132 +334,54 @@ export default function ReportsScreen() {
         >
           <Text style={[styles.tabText, selectedTab === 'pending' && styles.tabTextActive]}>Pending</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, selectedTab === 'analytics' && styles.tabActive]}
-          onPress={() => setSelectedTab('analytics')}
-        >
-          <Text style={[styles.tabText, selectedTab === 'analytics' && styles.tabTextActive]}>Analytics</Text>
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content}>
-        {selectedTab === 'analytics' ? (
-          <>
-            {/* Analytics Overview */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Reports Analytics</Text>
-              <View style={styles.metricsGrid}>
-                {renderMetricCard('Total Reports', ANALYTICS_DATA.overview.totalReports, FileText, COLORS.info)}
-                {renderMetricCard('Pending Reports', ANALYTICS_DATA.overview.pendingReports, Clock, COLORS.warning)}
-                {renderMetricCard('Approved Reports', ANALYTICS_DATA.overview.approvedReports, CheckCircle, COLORS.success)}
-                {renderMetricCard('Active Users', ANALYTICS_DATA.overview.totalUsers, Users, COLORS.primary)}
-              </View>
-            </View>
+        <View style={styles.statsRow}>
+          <TouchableOpacity onPress={() => setSelectedTab('all')}>
+            <Card style={styles.statCard} variant="elevated">
+              <FileText size={24} color={COLORS.info} />
+              <Text style={styles.statValue}>{ANALYTICS_DATA.overview.totalReports}</Text>
+              <Text style={styles.statLabel}>Total</Text>
+            </Card>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setSelectedTab('pending')}>
+            <Card style={styles.statCard} variant="elevated">
+              <Clock size={24} color={COLORS.warning} />
+              <Text style={styles.statValue}>{ANALYTICS_DATA.overview.pendingReports}</Text>
+              <Text style={styles.statLabel}>Pending</Text>
+            </Card>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setSelectedTab('all')}>
+            <Card style={styles.statCard} variant="elevated">
+              <CheckCircle size={24} color={COLORS.success} />
+              <Text style={styles.statValue}>{ANALYTICS_DATA.overview.approvedReports}</Text>
+              <Text style={styles.statLabel}>Approved</Text>
+            </Card>
+          </TouchableOpacity>
+        </View>
 
-            {/* Monthly Trends */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Monthly Trends</Text>
-              <Card style={styles.chartCard} variant="elevated">
-                <Text style={styles.chartTitle}>Reports Over Time</Text>
-                <View style={styles.chartContainer}>
-                  {ANALYTICS_DATA.trends.monthlyReports.map(data =>
-                    renderChartBar(data, Math.max(...ANALYTICS_DATA.trends.monthlyReports.map(d => d.reports)))
-                  )}
-                </View>
-              </Card>
-            </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            {selectedTab === 'all' ? 'All Reports' :
+             selectedTab === 'my' ? 'My Reports' :
+             selectedTab === 'pending' ? 'Pending Reports' : 'Reports'}
+          </Text>
+          {DEMO_REPORTS
+            .filter(report => {
+              if (selectedTab === 'pending') return report.status === 'pending';
+              if (selectedTab === 'my') return report.reporterName === user?.full_name;
+              return true;
+            })
+            .map(renderReport)}
+        </View>
 
-            {/* Distribution by State */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Reports by State</Text>
-              <Card style={styles.chartCard} variant="outlined">
-                {ANALYTICS_DATA.byState.map(data =>
-                  renderChartBar(data, Math.max(...ANALYTICS_DATA.byState.map(d => d.reports)))
-                )}
-              </Card>
-            </View>
-
-            {/* Category Distribution */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Reports by Category</Text>
-              <Card style={styles.chartCard} variant="outlined">
-                {ANALYTICS_DATA.byCategory.map(data =>
-                  renderPieSegment(data, ANALYTICS_DATA.overview.totalReports)
-                )}
-              </Card>
-            </View>
-
-            {/* Priority Distribution */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Reports by Priority</Text>
-              <Card style={styles.chartCard} variant="outlined">
-                {ANALYTICS_DATA.byPriority.map(data =>
-                  renderPieSegment(data, ANALYTICS_DATA.overview.totalReports)
-                )}
-              </Card>
-            </View>
-
-            {/* Status Distribution */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Reports by Status</Text>
-              <Card style={styles.chartCard} variant="outlined">
-                {ANALYTICS_DATA.byStatus.map(data =>
-                  renderPieSegment(data, ANALYTICS_DATA.overview.totalReports)
-                )}
-              </Card>
-            </View>
-          </>
-        ) : (
-          <>
-            <View style={styles.statsRow}>
-              <TouchableOpacity onPress={() => setSelectedTab('all')}>
-                <Card style={styles.statCard} variant="elevated">
-                  <FileText size={24} color={COLORS.info} />
-                  <Text style={styles.statValue}>{ANALYTICS_DATA.overview.totalReports}</Text>
-                  <Text style={styles.statLabel}>Total</Text>
-                </Card>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setSelectedTab('pending')}>
-                <Card style={styles.statCard} variant="elevated">
-                  <Clock size={24} color={COLORS.warning} />
-                  <Text style={styles.statValue}>{ANALYTICS_DATA.overview.pendingReports}</Text>
-                  <Text style={styles.statLabel}>Pending</Text>
-                </Card>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setSelectedTab('all')}>
-                <Card style={styles.statCard} variant="elevated">
-                  <CheckCircle size={24} color={COLORS.success} />
-                  <Text style={styles.statValue}>{ANALYTICS_DATA.overview.approvedReports}</Text>
-                  <Text style={styles.statLabel}>Approved</Text>
-                </Card>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>
-                {selectedTab === 'all' ? 'All Reports' :
-                 selectedTab === 'my' ? 'My Reports' :
-                 selectedTab === 'pending' ? 'Pending Reports' : 'Reports'}
-              </Text>
-              {DEMO_REPORTS
-                .filter(report => {
-                  if (selectedTab === 'pending') return report.status === 'pending';
-                  if (selectedTab === 'my') return report.reporterName === user?.full_name;
-                  return true;
-                })
-                .map(renderReport)}
-            </View>
-
-            <SocialFooter />
-          </>
-        )}
+        <SocialFooter />
       </ScrollView>
 
-      {selectedTab !== 'analytics' && (
-        <TouchableOpacity style={styles.fab} onPress={() => setShowForm(true)}>
-          <Plus size={24} color={COLORS.white} />
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity style={styles.fab} onPress={() => setShowForm(true)}>
+        <Plus size={24} color={COLORS.white} />
+      </TouchableOpacity>
 
       <Modal visible={showForm} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modalContainer}>

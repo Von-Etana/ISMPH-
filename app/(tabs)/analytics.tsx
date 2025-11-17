@@ -8,64 +8,46 @@ import {
   Dimensions,
 } from 'react-native';
 import { Card } from '@/src/components/Card';
-import { Badge } from '@/src/components/Badge';
-import { COLORS, SPACING, TYPOGRAPHY, ZONES } from '@/src/constants/theme';
-import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  FileText,
-  MessageSquare,
-  Activity,
-  Calendar,
-  MapPin,
-} from 'lucide-react-native';
+import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
+import { BarChart3, TrendingUp, Users, FileText, MessageSquare, Activity, Calendar, MapPin, PieChart } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
-// Mock analytics data
+// Analytics data
 const ANALYTICS_DATA = {
   overview: {
-    totalUsers: 1247,
-    totalReports: 89,
-    totalFeedback: 156,
-    activeCases: 234,
+    totalReports: 2,
+    pendingReports: 1,
+    approvedReports: 1,
+    totalUsers: 150,
   },
   trends: {
-    userGrowth: [
-      { month: 'Aug', users: 980 },
-      { month: 'Sep', users: 1050 },
-      { month: 'Oct', users: 1247 },
-    ],
-    reportActivity: [
-      { month: 'Aug', reports: 45 },
-      { month: 'Sep', reports: 67 },
-      { month: 'Oct', reports: 89 },
+    monthlyReports: [
+      { month: 'Aug', reports: 12 },
+      { month: 'Sep', reports: 18 },
+      { month: 'Oct', reports: 2 },
     ],
   },
   byState: [
-    { state: 'Lagos', users: 423, reports: 34, feedback: 45, cases: 89 },
-    { state: 'Abuja', users: 312, reports: 28, feedback: 38, cases: 67 },
-    { state: 'Kano', users: 298, reports: 19, feedback: 41, cases: 45 },
-    { state: 'Kaduna', users: 214, reports: 8, feedback: 32, cases: 33 },
+    { state: 'Lagos', reports: 1, percentage: 50 },
+    { state: 'Abuja', reports: 1, percentage: 50 },
   ],
   byCategory: [
-    { category: 'Service Quality', count: 34 },
-    { category: 'Equipment Shortage', count: 28 },
-    { category: 'Infrastructure', count: 19 },
-    { category: 'Staff Behavior', count: 15 },
-    { category: 'Drug Availability', count: 12 },
-    { category: 'Emergency Response', count: 8 },
+    { category: 'Service Quality', count: 1, percentage: 50 },
+    { category: 'Equipment Shortage', count: 1, percentage: 50 },
   ],
-  recentActivity: [
-    { type: 'user', action: 'New user registered', details: 'Staff account from Lagos', time: '2 hours ago' },
-    { type: 'report', action: 'Report submitted', details: 'Equipment shortage at Ikeja PHC', time: '4 hours ago' },
-    { type: 'feedback', action: 'Critical feedback', details: 'Long wait times at Victoria Island', time: '6 hours ago' },
-    { type: 'user', action: 'User deactivated', details: 'Account from Kano', time: '1 day ago' },
+  byPriority: [
+    { priority: 'High', count: 1, percentage: 50 },
+    { priority: 'Medium', count: 0, percentage: 0 },
+    { priority: 'Low', count: 1, percentage: 50 },
+  ],
+  byStatus: [
+    { status: 'Pending', count: 1, percentage: 50 },
+    { status: 'Approved', count: 1, percentage: 50 },
   ],
 };
 
-export default function AdminAnalyticsScreen() {
+export default function AnalyticsScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
 
   const renderMetricCard = (title: string, value: number, change: string, IconComponent: any, color: string) => (
@@ -84,70 +66,34 @@ export default function AdminAnalyticsScreen() {
     </Card>
   );
 
-  const renderStateCard = (stateData: any) => (
-    <Card key={stateData.state} style={styles.stateCard} variant="outlined">
-      <View style={styles.stateHeader}>
-        <Text style={styles.stateName}>{stateData.state}</Text>
-        <MapPin size={16} color={COLORS.primary} />
+  const renderChartBar = (data: any, maxValue: number) => (
+    <View key={data.month || data.category || data.state} style={styles.chartBar}>
+      <View style={styles.barContainer}>
+        <View
+          style={[styles.barFill, {
+            width: `${(data.reports || data.count || data.percentage) / maxValue * 100}%`,
+            backgroundColor: COLORS.primary
+          }]}
+        />
       </View>
-      <View style={styles.stateStats}>
-        <View style={styles.stateStat}>
-          <Users size={14} color={COLORS.info} />
-          <Text style={styles.stateStatValue}>{stateData.users}</Text>
-          <Text style={styles.stateStatLabel}>Users</Text>
-        </View>
-        <View style={styles.stateStat}>
-          <FileText size={14} color={COLORS.warning} />
-          <Text style={styles.stateStatValue}>{stateData.reports}</Text>
-          <Text style={styles.stateStatLabel}>Reports</Text>
-        </View>
-        <View style={styles.stateStat}>
-          <MessageSquare size={14} color={COLORS.error} />
-          <Text style={styles.stateStatValue}>{stateData.feedback}</Text>
-          <Text style={styles.stateStatLabel}>Feedback</Text>
-        </View>
-        <View style={styles.stateStat}>
-          <Activity size={14} color={COLORS.success} />
-          <Text style={styles.stateStatValue}>{stateData.cases}</Text>
-          <Text style={styles.stateStatLabel}>Cases</Text>
-        </View>
-      </View>
-    </Card>
+      <Text style={styles.barLabel}>{data.month || data.category || data.state}</Text>
+      <Text style={styles.barValue}>{data.reports || data.count || data.percentage}</Text>
+    </View>
   );
 
-  const renderCategoryBar = (categoryData: any, maxCount: number) => {
-    const percentage = (categoryData.count / maxCount) * 100;
-    return (
-      <View key={categoryData.category} style={styles.categoryItem}>
-        <View style={styles.categoryInfo}>
-          <Text style={styles.categoryName}>{categoryData.category}</Text>
-          <Text style={styles.categoryCount}>{categoryData.count}</Text>
-        </View>
-        <View style={styles.categoryBar}>
-          <View
-            style={[styles.categoryFill, { width: `${percentage}%` }]}
-          />
-        </View>
+  const renderPieSegment = (data: any, total: number) => (
+    <View key={data.category || data.priority || data.status} style={styles.pieSegment}>
+      <View style={styles.segmentInfo}>
+        <Text style={styles.segmentLabel}>{data.category || data.priority || data.status}</Text>
+        <Text style={styles.segmentValue}>{data.count} ({data.percentage}%)</Text>
       </View>
-    );
-  };
-
-  const renderActivityItem = (activity: any) => (
-    <View key={`${activity.type}-${activity.time}`} style={styles.activityItem}>
-      <Badge
-        label={activity.type.toUpperCase()}
-        variant="custom"
-        style={{
-          backgroundColor:
-            activity.type === 'user' ? COLORS.info + '20' :
-            activity.type === 'report' ? COLORS.warning + '20' :
-            COLORS.error + '20'
-        }}
-      />
-      <View style={styles.activityContent}>
-        <Text style={styles.activityAction}>{activity.action}</Text>
-        <Text style={styles.activityDetails}>{activity.details}</Text>
-        <Text style={styles.activityTime}>{activity.time}</Text>
+      <View style={styles.segmentBar}>
+        <View
+          style={[styles.segmentFill, {
+            width: `${data.percentage}%`,
+            backgroundColor: COLORS.primary
+          }]}
+        />
       </View>
     </View>
   );
@@ -179,10 +125,10 @@ export default function AdminAnalyticsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Key Metrics</Text>
           <View style={styles.metricsGrid}>
+            {renderMetricCard('Total Users', ANALYTICS_DATA.overview.totalUsers, '+12%', Users, COLORS.info)}
             {renderMetricCard('Total Reports', ANALYTICS_DATA.overview.totalReports, '+8%', FileText, COLORS.warning)}
-            {renderMetricCard('Total Feedback', ANALYTICS_DATA.overview.totalFeedback, '+15%', MessageSquare, COLORS.error)}
-            {renderMetricCard('Active Cases', ANALYTICS_DATA.overview.activeCases, '+5%', Activity, COLORS.success)}
-            {renderMetricCard('System Health', 98, '+2%', TrendingUp, COLORS.primary)}
+            {renderMetricCard('Total Feedback', ANALYTICS_DATA.overview.totalUsers, '+15%', MessageSquare, COLORS.error)}
+            {renderMetricCard('Active Cases', ANALYTICS_DATA.overview.totalUsers, '+5%', Activity, COLORS.success)}
           </View>
         </View>
 
@@ -193,16 +139,16 @@ export default function AdminAnalyticsScreen() {
             <View style={styles.trendChart}>
               <Text style={styles.trendTitle}>User Registration</Text>
               <View style={styles.trendBars}>
-                {ANALYTICS_DATA.trends.userGrowth.map((data, index) => (
+                {ANALYTICS_DATA.trends.monthlyReports.map((data, index) => (
                   <View key={data.month} style={styles.trendBar}>
                     <View
                       style={[styles.trendFill, {
-                        height: `${(data.users / 1300) * 100}%`,
+                        height: `${(data.reports / 20) * 100}%`,
                         backgroundColor: COLORS.info
                       }]}
                     />
                     <Text style={styles.trendLabel}>{data.month}</Text>
-                    <Text style={styles.trendValue}>{data.users}</Text>
+                    <Text style={styles.trendValue}>{data.reports}</Text>
                   </View>
                 ))}
               </View>
@@ -211,11 +157,11 @@ export default function AdminAnalyticsScreen() {
             <View style={styles.trendChart}>
               <Text style={styles.trendTitle}>Report Submissions</Text>
               <View style={styles.trendBars}>
-                {ANALYTICS_DATA.trends.reportActivity.map((data, index) => (
+                {ANALYTICS_DATA.trends.monthlyReports.map((data, index) => (
                   <View key={data.month} style={styles.trendBar}>
                     <View
                       style={[styles.trendFill, {
-                        height: `${(data.reports / 100) * 100}%`,
+                        height: `${(data.reports / 20) * 100}%`,
                         backgroundColor: COLORS.warning
                       }]}
                     />
@@ -231,7 +177,11 @@ export default function AdminAnalyticsScreen() {
         {/* State-wise Breakdown */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>State-wise Breakdown</Text>
-          {ANALYTICS_DATA.byState.map(renderStateCard)}
+          <Card style={styles.chartCard} variant="outlined">
+            {ANALYTICS_DATA.byState.map(data =>
+              renderChartBar(data, Math.max(...ANALYTICS_DATA.byState.map(d => d.reports)))
+            )}
+          </Card>
         </View>
 
         {/* Category Distribution */}
@@ -239,16 +189,28 @@ export default function AdminAnalyticsScreen() {
           <Text style={styles.sectionTitle}>Report Categories</Text>
           <Card style={styles.categoriesCard} variant="outlined">
             {ANALYTICS_DATA.byCategory.map(category =>
-              renderCategoryBar(category, Math.max(...ANALYTICS_DATA.byCategory.map(c => c.count)))
+              renderChartBar(category, Math.max(...ANALYTICS_DATA.byCategory.map(c => c.count)))
             )}
           </Card>
         </View>
 
-        {/* Recent Activity */}
+        {/* Priority Distribution */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <Card style={styles.activityCard} variant="outlined">
-            {ANALYTICS_DATA.recentActivity.map(renderActivityItem)}
+          <Text style={styles.sectionTitle}>Reports by Priority</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            {ANALYTICS_DATA.byPriority.map(data =>
+              renderPieSegment(data, ANALYTICS_DATA.overview.totalReports)
+            )}
+          </Card>
+        </View>
+
+        {/* Status Distribution */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Reports by Status</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            {ANALYTICS_DATA.byStatus.map(data =>
+              renderPieSegment(data, ANALYTICS_DATA.overview.totalReports)
+            )}
           </Card>
         </View>
       </ScrollView>
@@ -292,16 +254,16 @@ const styles = StyleSheet.create({
   trendLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
   trendValue: { ...TYPOGRAPHY.caption, color: COLORS.text, fontWeight: '600', marginTop: SPACING.xs },
 
-  // States
-  stateCard: { marginBottom: SPACING.md },
-  stateHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.md },
-  stateName: { ...TYPOGRAPHY.h4, color: COLORS.text },
-  stateStats: { flexDirection: 'row', justifyContent: 'space-between' },
-  stateStat: { alignItems: 'center' },
-  stateStatValue: { ...TYPOGRAPHY.body1, fontWeight: '600', marginTop: SPACING.xs },
-  stateStatLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginTop: SPACING.xs },
+  // Charts
+  chartCard: { padding: SPACING.md },
+  chartTitle: { ...TYPOGRAPHY.body1, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.md },
+  chartContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 120, paddingHorizontal: SPACING.md },
+  chartBar: { alignItems: 'center', flex: 1 },
+  barContainer: { width: 30, height: 100, justifyContent: 'flex-end', marginBottom: SPACING.sm },
+  barFill: { height: '100%', borderRadius: 4 },
+  barLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  barValue: { ...TYPOGRAPHY.caption, color: COLORS.text, fontWeight: '600', marginTop: SPACING.xs },
 
-  // Categories
   categoriesCard: { padding: SPACING.md },
   categoryItem: { marginBottom: SPACING.md },
   categoryInfo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm },
@@ -310,11 +272,10 @@ const styles = StyleSheet.create({
   categoryBar: { height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
   categoryFill: { height: '100%', backgroundColor: COLORS.primary, borderRadius: 4 },
 
-  // Activity
-  activityCard: { padding: SPACING.md },
-  activityItem: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: SPACING.md },
-  activityContent: { flex: 1, marginLeft: SPACING.sm },
-  activityAction: { ...TYPOGRAPHY.body2, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.xs },
-  activityDetails: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginBottom: SPACING.xs },
-  activityTime: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  pieSegment: { marginBottom: SPACING.md },
+  segmentInfo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm },
+  segmentLabel: { ...TYPOGRAPHY.body2, color: COLORS.text },
+  segmentValue: { ...TYPOGRAPHY.body2, fontWeight: '600', color: COLORS.primary },
+  segmentBar: { height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
+  segmentFill: { height: '100%', borderRadius: 4 },
 });

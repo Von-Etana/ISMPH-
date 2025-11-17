@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/src/store';
 import { signOut } from '@/src/store/slices/authSlice';
 import { View, TouchableOpacity, Text, Modal, StyleSheet, Alert } from 'react-native';
-import { Home, Newspaper, FileText, MessageSquare, User, MessageCircle, Menu, Settings, LogOut, Bell, Globe } from 'lucide-react-native';
+import { Home, Newspaper, FileText, MessageSquare, User, MessageCircle, Menu, Settings, LogOut, Bell, Globe, BarChart3 } from 'lucide-react-native';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
 import Toast from 'react-native-toast-message';
 
@@ -47,6 +47,21 @@ export default function TabLayout() {
       text1: 'Language Changed',
       text2: `Switched to ${nextLanguage}. Full app translation will be implemented soon.`,
     });
+    setShowMenu(false);
+  };
+
+  const handleNotifications = () => {
+    Toast.show({
+      type: 'info',
+      text1: 'Notifications',
+      text2: 'Notification settings will be available soon.',
+    });
+    setShowMenu(false);
+  };
+
+  const handleSettings = () => {
+    router.push('/settings');
+    setShowMenu(false);
   };
 
   if (!isAuthenticated) {
@@ -112,6 +127,13 @@ export default function TabLayout() {
           tabBarIcon: ({ size, color }) => <MessageCircle size={size} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="analytics"
+        options={{
+          title: 'Analytics',
+          tabBarIcon: ({ size, color }) => <BarChart3 size={size} color={color} />,
+        }}
+      />
     </Tabs>
 
     {/* Profile Menu Modal */}
@@ -138,7 +160,7 @@ export default function TabLayout() {
           </View>
 
           <View style={styles.menuItems}>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
               <Bell size={24} color={COLORS.text} />
               <Text style={styles.menuItemText}>Notifications</Text>
             </TouchableOpacity>
@@ -149,10 +171,7 @@ export default function TabLayout() {
               <Text style={styles.menuItemValue}>English</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => {
-              setShowMenu(false);
-              router.push('/settings');
-            }}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
               <Settings size={24} color={COLORS.text} />
               <Text style={styles.menuItemText}>Settings</Text>
             </TouchableOpacity>
