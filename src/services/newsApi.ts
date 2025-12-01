@@ -1,4 +1,5 @@
 import { NewsArticle } from '../constants/newsData';
+import { logger } from './logger';
 
 const NEWS_API_KEY = 'a40a6ed71928423dafd4888f6b5d18ea';
 const NEWS_API_BASE_URL = 'https://newsapi.org/v2';
@@ -50,7 +51,7 @@ class NewsAPIService {
 
       return data.articles.map(article => this.transformArticle(article));
     } catch (error) {
-      console.error('Error fetching news from NewsAPI:', error);
+      logger.error('Error fetching news from NewsAPI:', error);
       throw error;
     }
   }
@@ -73,7 +74,7 @@ class NewsAPIService {
 
       return data.articles.map(article => this.transformArticle(article));
     } catch (error) {
-      console.error('Error fetching top headlines from NewsAPI:', error);
+      logger.error('Error fetching top headlines from NewsAPI:', error);
       throw error;
     }
   }
@@ -154,7 +155,7 @@ class NewsAPIService {
 
       return data.articles.map(article => this.transformArticle(article));
     } catch (error) {
-      console.error('Error searching news:', error);
+      logger.error('Error searching news:', error);
       throw error;
     }
   }

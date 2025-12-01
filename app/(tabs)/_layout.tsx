@@ -10,7 +10,7 @@ import Toast from 'react-native-toast-message';
 
 export default function TabLayout() {
   const dispatch = useDispatch<AppDispatch>();
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, profile } = useSelector((state: RootState) => state.auth);
   const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
@@ -92,99 +92,99 @@ export default function TabLayout() {
           },
         }}
       >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ size, color }) => <Home size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="news"
-        options={{
-          title: 'News',
-          tabBarIcon: ({ size, color }) => <Newspaper size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="reports"
-        options={{
-          title: 'Reports',
-          tabBarIcon: ({ size, color }) => <FileText size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="feedback"
-        options={{
-          title: 'Feedback',
-          tabBarIcon: ({ size, color }) => <MessageSquare size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'Chat',
-          tabBarIcon: ({ size, color }) => <MessageCircle size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="analytics"
-        options={{
-          title: 'Analytics',
-          tabBarIcon: ({ size, color }) => <BarChart3 size={size} color={color} />,
-        }}
-      />
-    </Tabs>
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ size, color }) => <Home size={size} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="news"
+          options={{
+            title: 'News',
+            tabBarIcon: ({ size, color }) => <Newspaper size={size} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="reports"
+          options={{
+            title: 'Reports',
+            tabBarIcon: ({ size, color }) => <FileText size={size} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="feedback"
+          options={{
+            title: 'Feedback',
+            tabBarIcon: ({ size, color }) => <MessageSquare size={size} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="chat"
+          options={{
+            title: 'Chat',
+            tabBarIcon: ({ size, color }) => <MessageCircle size={size} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="analytics"
+          options={{
+            title: 'Analytics',
+            tabBarIcon: ({ size, color }) => <BarChart3 size={size} color={color} />,
+          }}
+        />
+      </Tabs>
 
-    {/* Profile Menu Modal */}
-    <Modal visible={showMenu} animationType="fade" transparent={true}>
-      <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowMenu(false)}>
-        <View style={styles.menuModal}>
-          <View style={styles.menuHeader}>
-            <Text style={styles.menuTitle}>Menu</Text>
-            <TouchableOpacity onPress={() => setShowMenu(false)}>
-              <Text style={styles.closeButton}>×</Text>
-            </TouchableOpacity>
-          </View>
+      {/* Profile Menu Modal */}
+      <Modal visible={showMenu} animationType="fade" transparent={true}>
+        <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowMenu(false)}>
+          <View style={styles.menuModal}>
+            <View style={styles.menuHeader}>
+              <Text style={styles.menuTitle}>Menu</Text>
+              <TouchableOpacity onPress={() => setShowMenu(false)}>
+                <Text style={styles.closeButton}>×</Text>
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.userInfo}>
-            <User size={40} color={COLORS.primary} />
-            <View style={styles.userDetails}>
-              <Text style={styles.userName}>{user?.full_name || user?.email?.split('@')[0] || 'User'}</Text>
-              <Text style={styles.userEmail}>{user?.email}</Text>
-              <View style={styles.userRole}>
-                <Text style={styles.roleText}>{user?.role?.toUpperCase()}</Text>
-                {user?.state && <Text style={styles.stateText}>{user.state}</Text>}
+            <View style={styles.userInfo}>
+              <User size={40} color={COLORS.primary} />
+              <View style={styles.userDetails}>
+                <Text style={styles.userName}>{profile?.full_name || profile?.email?.split('@')[0] || 'User'}</Text>
+                <Text style={styles.userEmail}>{profile?.email}</Text>
+                <View style={styles.userRole}>
+                  <Text style={styles.roleText}>{profile?.role?.toUpperCase()}</Text>
+                  {profile?.state && <Text style={styles.stateText}>{profile.state}</Text>}
+                </View>
               </View>
             </View>
+
+            <View style={styles.menuItems}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
+                <Bell size={24} color={COLORS.text} />
+                <Text style={styles.menuItemText}>Notifications</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.menuItem} onPress={handleLanguageChange}>
+                <Globe size={24} color={COLORS.text} />
+                <Text style={styles.menuItemText}>Language</Text>
+                <Text style={styles.menuItemValue}>English</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
+                <Settings size={24} color={COLORS.text} />
+                <Text style={styles.menuItemText}>Settings</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+              <LogOut size={20} color={COLORS.error} />
+              <Text style={styles.signOutText}>Sign Out</Text>
+            </TouchableOpacity>
           </View>
-
-          <View style={styles.menuItems}>
-            <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
-              <Bell size={24} color={COLORS.text} />
-              <Text style={styles.menuItemText}>Notifications</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.menuItem} onPress={handleLanguageChange}>
-              <Globe size={24} color={COLORS.text} />
-              <Text style={styles.menuItemText}>Language</Text>
-              <Text style={styles.menuItemValue}>English</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.menuItem} onPress={handleSettings}>
-              <Settings size={24} color={COLORS.text} />
-              <Text style={styles.menuItemText}>Settings</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-            <LogOut size={20} color={COLORS.error} />
-            <Text style={styles.signOutText}>Sign Out</Text>
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    </Modal>
-  </View>
+        </TouchableOpacity>
+      </Modal>
+    </View>
   );
 }
 

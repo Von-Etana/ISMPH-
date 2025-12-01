@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { router } from 'expo-router';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { RootState, AppDispatch } from '@/src/store';
 import { fetchDiseases } from '@/src/store/slices/diseasesSlice';
 import { fetchApprovedReports } from '@/src/store/slices/reportsSlice';
@@ -31,7 +32,7 @@ const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { profile } = useSelector((state: RootState) => state.auth);
   const { diseases, loading: diseasesLoading } = useSelector((state: RootState) => state.diseases);
   const { reports } = useSelector((state: RootState) => state.reports);
 
@@ -74,7 +75,7 @@ export default function HomeScreen() {
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>ISMPH Dashboard</Text>
-        <Text style={styles.headerSubtitle}>Welcome, {user?.full_name || user?.email}</Text>
+        <Text style={styles.headerSubtitle}>Welcome, {profile?.full_name || profile?.email || 'User'}</Text>
       </View>
 
       <ScrollView
@@ -84,8 +85,8 @@ export default function HomeScreen() {
         }
       >
         {/* Analytics Section */}
-        <View style={styles.section}>
-          <TouchableOpacity 
+        <Animated.View entering={FadeInDown.delay(100).duration(500)} style={styles.section}>
+          <TouchableOpacity
             style={styles.sectionHeader}
             onPress={() => setShowAnalytics(!showAnalytics)}
           >
@@ -97,7 +98,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           {showAnalytics && (
-            <View style={styles.analyticsGrid}>
+            <Animated.View entering={FadeInDown.duration(300)} style={styles.analyticsGrid}>
               <Card style={styles.analyticsCard} variant="elevated">
                 <View style={[styles.analyticsIcon, { backgroundColor: COLORS.info + '20' }]}>
                   <Activity size={24} color={COLORS.info} />
@@ -129,12 +130,12 @@ export default function HomeScreen() {
                 <Text style={styles.analyticsValue}>{totalDeaths.toLocaleString()}</Text>
                 <Text style={styles.analyticsLabel}>Deaths</Text>
               </Card>
-            </View>
+            </Animated.View>
           )}
-        </View>
+        </Animated.View>
 
         {/* Quick Actions */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInRight.delay(200).duration(500)} style={styles.section}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.carousel}>
             <Card style={styles.actionCard} variant="elevated" onPress={() => router.push('/reports')}>
@@ -155,46 +156,54 @@ export default function HomeScreen() {
               <Text style={styles.actionSubtitle}>Latest health updates</Text>
             </Card>
           </ScrollView>
-        </View>
+        </Animated.View>
 
 
         {/* Thematic Area of Focus */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.delay(300).duration(500)} style={styles.section}>
           <Text style={styles.sectionTitle}>Thematic Area of Focus</Text>
           <Text style={styles.sectionSubtitle}>Explore health topics and policies</Text>
           <View style={styles.categoriesGrid}>
-            {THEMATIC_CATEGORIES.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                onPress={() => {
-                  // Navigate to news page with category filter
-                  router.push({
-                    pathname: '/news',
-                    params: { category: category.name }
-                  });
-                }}
-              >
-                <Card style={styles.categoryCard} variant="outlined">
-                  <View style={[styles.categoryIcon, { backgroundColor: category.color + '20' }]}>
-                    <Text style={styles.categoryEmoji}>{category.icon}</Text>
-                  </View>
-                  <Text style={styles.categoryName}>{category.name}</Text>
-                  <Text style={styles.categoryDescription} numberOfLines={2}>
-                    {category.description}
-                  </Text>
-                  <View style={styles.categoryNewsCount}>
-                    <Text style={styles.categoryNewsCountText}>
-                      {getNewsByCategory(category.name).length} articles
-                    </Text>
-                  </View>
-                </Card>
-              </TouchableOpacity>
-            ))}
+            {THEMATIC_CATEGORIES.map((category, index) => {
+              const IconComponent = category.icon;
+              return (
+                <Animated.View
+                  key={category.id}
+                  entering={FadeInDown.delay(300 + index * 50).duration(500)}
+                  style={{ width: '48%' }} // Helper wrapper for grid layout
+                >
+                  <TouchableOpacity
+                    onPress={() => {
+                      // Navigate to news page with category filter
+                      router.push({
+                        pathname: '/news',
+                        params: { category: category.name }
+                      });
+                    }}
+                  >
+                    <Card style={styles.categoryCard} variant="outlined">
+                      <View style={[styles.categoryIcon, { backgroundColor: category.color + '20' }]}>
+                        <IconComponent size={24} color={category.color} />
+                      </View>
+                      <Text style={styles.categoryName}>{category.name}</Text>
+                      <Text style={styles.categoryDescription} numberOfLines={2}>
+                        {category.description}
+                      </Text>
+                      <View style={styles.categoryNewsCount}>
+                        <Text style={styles.categoryNewsCountText}>
+                          {getNewsByCategory(category.name).length} articles
+                        </Text>
+                      </View>
+                    </Card>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
           </View>
-        </View>
+        </Animated.View>
 
         {/* Policy Commitments */}
-        <View style={styles.section}>
+        <Animated.View entering={FadeInDown.delay(400).duration(500)} style={styles.section}>
           <Text style={styles.sectionTitle}>Policy Commitments</Text>
           <Card style={styles.policyCard} variant="outlined">
             <Badge label="Active" variant="custom" style={{ backgroundColor: COLORS.success }} />
@@ -215,11 +224,11 @@ export default function HomeScreen() {
             <Text style={styles.policyTitle}>Policy Framework</Text>
             <Text style={styles.policyText}>New policies to strengthen disease surveillance</Text>
           </Card>
-        </View>
+        </Animated.View>
 
         {/* Recent Reports */}
         {reports.length > 0 && (
-          <View style={styles.section}>
+          <Animated.View entering={FadeInDown.delay(500).duration(500)} style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Recent Reports</Text>
               <TouchableOpacity onPress={() => router.push('/reports')}>
@@ -253,7 +262,7 @@ export default function HomeScreen() {
                 </Text>
               </Card>
             ))}
-          </View>
+          </Animated.View>
         )}
 
         <SocialFooter />
@@ -277,20 +286,20 @@ const styles = StyleSheet.create({
   sectionTitle: { ...TYPOGRAPHY.h3, color: COLORS.text, marginBottom: SPACING.md },
   sectionSubtitle: { ...TYPOGRAPHY.body2, color: COLORS.textSecondary, marginBottom: SPACING.md, marginTop: -SPACING.sm },
   viewAll: { ...TYPOGRAPHY.body2, color: COLORS.primary, fontWeight: '600' },
-  
+
   // Analytics
   analyticsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
-  analyticsCard: { flex: 1, minWidth: (width - SPACING.md * 3) / 2, alignItems: 'center', padding: SPACING.md },
+  analyticsCard: { flex: 1, minWidth: (width - SPACING.md * 3) / 2, alignItems: 'center' }, // Removed padding
   analyticsIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.sm },
   analyticsValue: { ...TYPOGRAPHY.h2, color: COLORS.text, marginTop: SPACING.xs },
   analyticsLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginTop: SPACING.xs, textAlign: 'center' },
-  
+
   // Quick Actions
   carousel: { marginHorizontal: -SPACING.md, paddingHorizontal: SPACING.md },
-  actionCard: { width: 140, marginRight: SPACING.md, padding: SPACING.md, alignItems: 'center' },
+  actionCard: { width: 140, marginRight: SPACING.md, alignItems: 'center' }, // Removed padding
   actionTitle: { ...TYPOGRAPHY.body1, fontWeight: '600', marginTop: SPACING.sm, textAlign: 'center' },
   actionSubtitle: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, textAlign: 'center', marginTop: SPACING.xs },
-  
+
   // Disease Tracker
   zoneCard: { marginBottom: SPACING.md },
   zoneHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -310,22 +319,21 @@ const styles = StyleSheet.create({
   rateSection: { marginBottom: SPACING.sm },
   rateLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginBottom: SPACING.xs },
   progressBar: { height: 6, backgroundColor: COLORS.border, borderRadius: 3, overflow: 'hidden' },
-  
+
   // Categories
-  categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
-  categoryCard: { width: (width - SPACING.md * 3) / 2, padding: SPACING.md },
+  categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: SPACING.md }, // Improved grid layout
+  categoryCard: { width: '100%' }, // Removed fixed width and padding, let helper wrapper handle width
   categoryIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.sm },
-  categoryEmoji: { fontSize: 24 },
   categoryName: { ...TYPOGRAPHY.body2, fontWeight: '600', marginBottom: SPACING.xs },
   categoryDescription: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
   categoryNewsCount: { marginTop: SPACING.xs },
   categoryNewsCountText: { ...TYPOGRAPHY.caption, color: COLORS.primary, fontWeight: '600' },
-  
+
   // Policy
   policyCard: { marginBottom: SPACING.md },
   policyTitle: { ...TYPOGRAPHY.body1, fontWeight: '600', marginTop: SPACING.sm, marginBottom: SPACING.xs },
   policyText: { ...TYPOGRAPHY.body2, color: COLORS.textSecondary },
-  
+
   // Reports
   reportCard: { marginBottom: SPACING.md },
   reportHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.xs },

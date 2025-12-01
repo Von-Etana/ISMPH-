@@ -29,15 +29,6 @@ import {
 import Toast from 'react-native-toast-message';
 import { ChatService } from '@/src/services/chatService';
 import { Message } from '@/src/types';
-
-// WhatsApp group links for each zone (loaded from environment variables)
-const WHATSAPP_GROUPS = {
-  'Lagos': process.env.EXPO_PUBLIC_WHATSAPP_LAGOS || 'https://chat.whatsapp.com/BKKJA9uWto6KSMbm6SOmnb?mode=wwt',
-  'Kano': process.env.EXPO_PUBLIC_WHATSAPP_KANO || 'https://chat.whatsapp.com/HQQBeJnwIs0FUTCQq6h1tL?mode=wwt',
-  'Kaduna': process.env.EXPO_PUBLIC_WHATSAPP_KADUNA || 'https://chat.whatsapp.com/GcHwV95X6UH5bvhfwigpxH?mode=wwt',
-};
-
-
 // Constants for magic numbers
 const CHAT_CONSTANTS = {
   MAX_MESSAGE_HEIGHT: 80,
@@ -49,9 +40,8 @@ const CHAT_CONSTANTS = {
   ACTION_BUTTON_HEIGHT: 44,
   MODAL_PADDING_TOP: SPACING.xl + 20,
 } as const;
-
 export default function ChatScreen() {
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { profile } = useSelector((state: RootState) => state.auth);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [showChatModal, setShowChatModal] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -62,8 +52,8 @@ export default function ChatScreen() {
   const chatService = ChatService.getInstance();
 
   // Only staff users can access this feature
-  const isStaff = user?.role === 'staff';
-  const userZone = user?.state || 'Lagos';
+  const isStaff = profile?.role === 'staff';
+  const userZone = profile?.state || 'Lagos';
 
   const handleError = useCallback((error: Error) => {
     console.error('Chat component error:', error);
@@ -99,130 +89,121 @@ export default function ChatScreen() {
   }, [selectedZone, chatService]);
 
   const loadChatHistory = useCallback(async (zone: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const messages = await chatService.getMessagesForZone(zone);
       setChatHistory(messages);
     } catch (error) {
-      console.error('Error loading chat history:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Failed to Load Messages',
-        text2: 'Unable to load chat history. Please try again.',
-      });
-      setChatHistory([]);
+      handleError(error as Error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
-
-  const openWhatsAppGroup = async (zone: string) => {
-    setIsLoading(true);
-    const groupLink = WHATSAPP_GROUPS[zone as keyof typeof WHATSAPP_GROUPS];
-
-    try {
-      const supported = await Linking.canOpenURL(groupLink);
-      if (supported) {
-        await Linking.openURL(groupLink);
-        Toast.show({
-          type: 'success',
-          text1: 'Opening WhatsApp',
-          text2: `${zone} zone group opened`,
-        });
-      } else {
-        Toast.show({
-          type: 'error',
-          text1: 'WhatsApp Not Available',
-          text2: 'Please make sure WhatsApp is installed on your device.',
-        });
-      }
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Connection Error',
-        text2: 'Failed to open WhatsApp group. Please try again.',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const sendMessage = async () => {
-    if (!messageText.trim()) {
-      Toast.show({
-        type: 'error',
-        text1: 'Message Required',
-        text2: 'Please enter a message to send',
-      });
-      return;
-    }
-
-    if (!selectedZone || !user?.id) return;
-
-    // Validate message
-    const validation = await chatService.validateMessage(messageText);
-    if (!validation.isValid) {
-      Toast.show({
-        type: 'error',
-        text1: 'Invalid Message',
-        text2: validation.error,
-      });
-      return;
-    }
-
-    setIsSending(true);
-    try {
-      await chatService.sendMessage(selectedZone, messageText.trim(), user.id);
-      // Don't add to local state - real-time subscription will handle it
-      setMessageText('');
+  }, [chatService, handleError]);
+const openWhatsAppGroup = useCallback(async (zone: string) => {
+  try {
+    const groupLink = `whatsapp://send?phone=${zone === 'Lagos' ? '1234567890' : '0987654321'}`; // placeholder
+    const supported = await Linking.canOpenURL(groupLink);
+    if (supported) {
+      await Linking.openURL(groupLink);
       Toast.show({
         type: 'success',
-        text1: 'Message Sent',
-        text2: 'Your message has been sent to the zone',
+        text1: 'Opening WhatsApp',
+        text2: `${zone} zone group opened`,
       });
-    } catch (error) {
-      console.error('Error sending message:', error);
+    } else {
       Toast.show({
         type: 'error',
-        text1: 'Failed to Send Message',
-        text2: 'Please try again later.',
+        text1: 'WhatsApp Not Available',
+        text2: 'Please make sure WhatsApp is installed on your device.',
       });
-    } finally {
-      setIsSending(false);
     }
-  };
+  } catch (error) {
+    Toast.show({
+      type: 'error',
+      text1: 'Connection Error',
+      text2: 'Failed to open WhatsApp group. Please try again.',
+    });
+  } finally {
+    setIsLoading(false);
+  }
+}, []);
 
-  const openChatForZone = useCallback((zone: string) => {
-    setSelectedZone(zone);
-    setShowChatModal(true);
-  }, []);
-
-  if (!isStaff) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Zone Chat</Text>
-        </View>
-        <View style={styles.restrictedContainer}>
-          <View style={styles.restrictedAvatar}>
-            <MessageCircle size={CHAT_CONSTANTS.AVATAR_SIZE * 0.6} color={COLORS.white} />
-          </View>
-          <Text style={styles.restrictedTitle}>Staff Access Required</Text>
-          <Text style={styles.restrictedText}>
-            This feature is only available for staff members to communicate within their zone groups.
-          </Text>
-        </View>
-      </View>
-    );
+const sendMessage = async () => {
+  if (!messageText.trim()) {
+    Toast.show({
+      type: 'error',
+      text1: 'Message Required',
+      text2: 'Please enter a message to send',
+    });
+    return;
   }
 
+  if (!selectedZone || !profile?.id) return;
+
+  // Validate message
+  const validation = await chatService.validateMessage(messageText);
+  if (!validation.isValid) {
+    Toast.show({
+      type: 'error',
+      text1: 'Invalid Message',
+      text2: validation.error,
+    });
+    return;
+  }
+
+  setIsSending(true);
+  try {
+    await chatService.sendMessage(selectedZone, messageText.trim(), profile.id);
+    // Don't add to local state - real-time subscription will handle it
+    setMessageText('');
+    Toast.show({
+      type: 'success',
+      text1: 'Message Sent',
+      text2: 'Your message has been sent to the zone',
+    });
+  } catch (error) {
+    console.error('Error sending message:', error);
+    Toast.show({
+      type: 'error',
+      text1: 'Failed to Send Message',
+      text2: 'Please try again later.',
+    });
+  } finally {
+    setIsSending(false);
+  }
+};
+
+const openChatForZone = useCallback((zone: string) => {
+  setSelectedZone(zone);
+  setShowChatModal(true);
+}, []);
+
+if (!isStaff) {
   return (
-    <ErrorBoundary onError={handleError}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Zone Communication</Text>
-          <Text style={styles.headerSubtitle}>Connect with your zone team via WhatsApp</Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Zone Chat</Text>
+      </View>
+      <View style={styles.restrictedContainer}>
+        <View style={styles.restrictedAvatar}>
+          <MessageCircle size={CHAT_CONSTANTS.AVATAR_SIZE * 0.6} color={COLORS.white} />
         </View>
+        <Text style={styles.restrictedTitle}>Admin Approval Required</Text>
+        <Text style={styles.restrictedText}>
+          This feature is only available for staff members to communicate within their zone groups.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+return (
+  <ErrorBoundary onError={handleError}>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Zone Communication</Text>
+        <Text style={styles.headerSubtitle}>Connect with your zone team via WhatsApp</Text>
+      </View>
 
       <ScrollView style={styles.content}>
         <View style={styles.section}>
@@ -337,7 +318,7 @@ export default function ChatScreen() {
               </View>
             ) : (
               chatHistory.map((message) => {
-                const isOwn = message.user_id === user?.id;
+                const isOwn = message.user_id === profile?.id;
                 return (
                   <View
                     key={message.id}
@@ -405,8 +386,8 @@ export default function ChatScreen() {
         </View>
       </Modal>
     </View>
-    </ErrorBoundary>
-  );
+  </ErrorBoundary>
+);
 }
 
 const styles = StyleSheet.create({

@@ -32,8 +32,8 @@ import {
 const { width } = Dimensions.get('window');
 
 export default function AdminDashboard() {
-  const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
+   const dispatch = useDispatch<AppDispatch>();
+   const { profile } = useSelector((state: RootState) => state.auth);
   const { diseases, loading: diseasesLoading } = useSelector((state: RootState) => state.diseases);
   const { reports } = useSelector((state: RootState) => state.reports);
 
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Admin Dashboard</Text>
-        <Text style={styles.headerSubtitle}>Welcome back, {user?.full_name}</Text>
+        <Text style={styles.headerSubtitle}>Welcome back, {profile?.full_name}</Text>
       </View>
 
       <ScrollView

@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { Message } from '../types';
+import { logger } from './logger';
 
 export class ChatService {
   private static instance: ChatService;
@@ -31,7 +32,7 @@ export class ChatService {
         .order('timestamp', { ascending: true });
 
       if (error) {
-        console.error('Error fetching messages:', error);
+        logger.error('Error fetching messages:', error);
         throw new Error('Failed to fetch messages');
       }
 
@@ -45,7 +46,7 @@ export class ChatService {
         sender_role: msg.profiles?.[0]?.role || 'staff',
       }));
     } catch (error) {
-      console.error('Error in getMessagesForZone:', error);
+      logger.error('Error in getMessagesForZone:', error);
       throw error;
     }
   }
@@ -74,7 +75,7 @@ export class ChatService {
         .single();
 
       if (error) {
-        console.error('Error sending message:', error);
+        logger.error('Error sending message:', error);
         throw new Error('Failed to send message');
       }
 
@@ -88,14 +89,16 @@ export class ChatService {
         sender_role: data.profiles?.[0]?.role || 'staff',
       };
     } catch (error) {
-      console.error('Error in sendMessage:', error);
+      logger.error('Error in sendMessage:', error);
       throw error;
     }
   }
 
   subscribeToZoneMessages(zone: string, callback: (message: Message) => void): () => void {
+    let isMounted = true;
+
     try {
-      this.realtimeSubscription = supabase
+      const channel = supabase
         .channel(`zone_messages_${zone}`)
         .on(
           'postgres_changes',
@@ -106,6 +109,8 @@ export class ChatService {
             filter: `zone=eq.${zone}`,
           },
           async (payload) => {
+            if (!isMounted) return; // Prevent callback after unmount
+
             try {
               // Fetch the complete message with profile data
               const { data, error } = await supabase
@@ -124,8 +129,8 @@ export class ChatService {
                 .eq('id', payload.new.id)
                 .single();
 
-              if (error) {
-                console.error('Error fetching new message:', error);
+              if (error || !isMounted) {
+                if (error) logger.error('Error fetching new message:', error);
                 return;
               }
 
@@ -141,21 +146,26 @@ export class ChatService {
 
               callback(message);
             } catch (error) {
-              console.error('Error processing realtime message:', error);
+              logger.error('Error processing realtime message:', error);
             }
           }
         )
         .subscribe();
 
+      this.realtimeSubscription = channel;
+
       return () => {
+        isMounted = false;
         if (this.realtimeSubscription) {
           supabase.removeChannel(this.realtimeSubscription);
           this.realtimeSubscription = null;
         }
       };
     } catch (error) {
-      console.error('Error subscribing to messages:', error);
-      return () => {};
+      logger.error('Error subscribing to messages:', error);
+      return () => {
+        isMounted = false;
+      };
     }
   }
 
@@ -194,13 +204,13 @@ export class ChatService {
         .eq('zone', zone);
 
       if (error) {
-        console.error('Error getting message count:', error);
+        logger.error('Error getting message count:', error);
         return 0;
       }
 
       return count || 0;
     } catch (error) {
-      console.error('Error in getMessageCount:', error);
+      logger.error('Error in getMessageCount:', error);
       return 0;
     }
   }

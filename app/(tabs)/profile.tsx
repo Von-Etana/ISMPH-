@@ -13,7 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { profile } = useSelector((state: RootState) => state.auth);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const handleSignOut = async () => {
@@ -97,11 +97,11 @@ export default function ProfileScreen() {
               </View>
             </TouchableOpacity>
           </View>
-          <Text style={styles.name}>{user?.full_name || user?.email?.split('@')[0] || 'User'}</Text>
-          <Text style={styles.email}>{user?.email}</Text>
+          <Text style={styles.name}>{profile?.full_name || profile?.email?.split('@')[0] || 'User'}</Text>
+          <Text style={styles.email}>{profile?.email}</Text>
           <View style={styles.roleContainer}>
-            <Text style={styles.role}>{user?.role?.toUpperCase()}</Text>
-            {user?.state && <Text style={styles.state}>{user.state}</Text>}
+            <Text style={styles.role}>{profile?.role?.toUpperCase()}</Text>
+            {profile?.state && <Text style={styles.state}>{profile.state}</Text>}
           </View>
         </Card>
 

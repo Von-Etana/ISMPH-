@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY } from '../constants/theme';
 
 interface ButtonProps {
@@ -7,7 +7,7 @@ interface ButtonProps {
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'outline' | 'text';
   loading?: boolean;
-  style?: any;
+  style?: ViewStyle;
 }
 
 export const Button: React.FC<ButtonProps> = ({

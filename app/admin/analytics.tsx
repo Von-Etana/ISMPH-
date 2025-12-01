@@ -179,6 +179,7 @@ export default function AdminAnalyticsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Key Metrics</Text>
           <View style={styles.metricsGrid}>
+            {renderMetricCard('Total Users', ANALYTICS_DATA.overview.totalUsers, '+12%', Users, COLORS.info)}
             {renderMetricCard('Total Reports', ANALYTICS_DATA.overview.totalReports, '+8%', FileText, COLORS.warning)}
             {renderMetricCard('Total Feedback', ANALYTICS_DATA.overview.totalFeedback, '+15%', MessageSquare, COLORS.error)}
             {renderMetricCard('Active Cases', ANALYTICS_DATA.overview.activeCases, '+5%', Activity, COLORS.success)}

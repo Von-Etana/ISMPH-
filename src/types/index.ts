@@ -44,6 +44,7 @@ export interface Report {
   priority: ReportPriority;
   status: ReportStatus;
   media_urls: string[];
+  assigned_officer?: string;
   created_at: string;
   updated_at: string;
 }
@@ -56,4 +57,41 @@ export interface Message {
   timestamp: string;
   sender_name?: string;
   sender_role?: UserRole;
+}
+
+export interface Feedback {
+  id: string;
+  user_id: string;
+  facility_name: string;
+  category: string;
+  description: string;
+  status: FeedbackStatus;
+  priority: ReportPriority;
+  state: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  description: string;
+  source: string;
+  date: string;
+  category: string;
+  priority: ReportPriority;
+  type: 'news' | 'report';
+  state: string;
+  url?: string;
+  mediaType?: string;
+}
+
+export interface AdminStats {
+  totalReports: number;
+  pendingReports: number;
+  approvedReports: number;
+  rejectedReports: number;
+  totalUsers: number;
+  totalDiseases: number;
+  totalFeedback: number;
 }

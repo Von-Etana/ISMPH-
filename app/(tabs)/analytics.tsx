@@ -9,48 +9,74 @@ import {
 } from 'react-native';
 import { Card } from '@/src/components/Card';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
-import { BarChart3, TrendingUp, Users, FileText, MessageSquare, Activity, Calendar, MapPin, PieChart } from 'lucide-react-native';
+import { BarChart3, TrendingUp, Users, FileText, MessageSquare, Activity, Calendar, MapPin, PieChart, Clock, CheckCircle } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
-// Analytics data
-const ANALYTICS_DATA = {
+// Reports Analytics Data
+const REPORTS_ANALYTICS = {
   overview: {
-    totalReports: 2,
-    pendingReports: 1,
-    approvedReports: 1,
-    totalUsers: 150,
+    totalReports: 245,
+    pendingReports: 89,
+    approvedReports: 156,
+    resolvedReports: 134,
+    avgResolutionTime: '3.2 days',
   },
-  trends: {
-    monthlyReports: [
-      { month: 'Aug', reports: 12 },
-      { month: 'Sep', reports: 18 },
-      { month: 'Oct', reports: 2 },
-    ],
-  },
+  monthlyTrends: [
+    { month: 'Jul', reports: 18, resolved: 15 },
+    { month: 'Aug', reports: 32, resolved: 28 },
+    { month: 'Sep', reports: 45, resolved: 38 },
+    { month: 'Oct', reports: 67, resolved: 53 },
+    { month: 'Nov', reports: 83, resolved: 0 }, // Current month
+  ],
+  relevanceDistribution: [
+    { relevance: 'Critical', count: 45, percentage: 18.4, color: COLORS.error },
+    { relevance: 'High', count: 78, percentage: 31.8, color: COLORS.warning },
+    { relevance: 'Medium', count: 89, percentage: 36.3, color: COLORS.info },
+    { relevance: 'Low', count: 33, percentage: 13.5, color: COLORS.success },
+  ],
+  topDiseasesByCases: [
+    { disease: 'Malaria', cases: 45, percentage: 28.1 },
+    { disease: 'Typhoid', cases: 32, percentage: 20.0 },
+    { disease: 'Diarrhea', cases: 28, percentage: 17.5 },
+    { disease: 'Respiratory Infections', cases: 25, percentage: 15.6 },
+    { disease: 'Skin Infections', cases: 18, percentage: 11.3 },
+    { disease: 'Others', cases: 12, percentage: 7.5 },
+  ],
   byState: [
-    { state: 'Lagos', reports: 1, percentage: 50 },
-    { state: 'Abuja', reports: 1, percentage: 50 },
+    { state: 'Lagos', reports: 89, percentage: 36.3 },
+    { state: 'Abuja', reports: 67, percentage: 27.3 },
+    { state: 'Kano', reports: 45, percentage: 18.4 },
+    { state: 'Rivers', reports: 34, percentage: 13.9 },
+    { state: 'Others', reports: 10, percentage: 4.1 },
   ],
   byCategory: [
-    { category: 'Service Quality', count: 1, percentage: 50 },
-    { category: 'Equipment Shortage', count: 1, percentage: 50 },
+    { category: 'Service Quality', count: 67, percentage: 27.3 },
+    { category: 'Equipment Shortage', count: 56, percentage: 22.9 },
+    { category: 'Drug Availability', count: 45, percentage: 18.4 },
+    { category: 'Staff Behavior', count: 34, percentage: 13.9 },
+    { category: 'Infrastructure', count: 28, percentage: 11.4 },
+    { category: 'Others', count: 15, percentage: 6.1 },
   ],
-  byPriority: [
-    { priority: 'High', count: 1, percentage: 50 },
-    { priority: 'Medium', count: 0, percentage: 0 },
-    { priority: 'Low', count: 1, percentage: 50 },
+  responseTimeAnalysis: [
+    { range: '< 24hrs', count: 89, percentage: 36.3 },
+    { range: '24-48hrs', count: 67, percentage: 27.3 },
+    { range: '2-7 days', count: 56, percentage: 22.9 },
+    { range: '> 7 days', count: 33, percentage: 13.5 },
   ],
-  byStatus: [
-    { status: 'Pending', count: 1, percentage: 50 },
-    { status: 'Approved', count: 1, percentage: 50 },
+  facilityPerformance: [
+    { facility: 'General Hospital Lagos', reports: 23, avgRating: 3.2 },
+    { facility: 'PHC Ikeja', reports: 18, avgRating: 4.1 },
+    { facility: 'Teaching Hospital Abuja', reports: 15, avgRating: 3.8 },
+    { facility: 'PHC Kano', reports: 12, avgRating: 2.9 },
+    { facility: 'General Hospital Port Harcourt', reports: 10, avgRating: 3.5 },
   ],
 };
 
 export default function AnalyticsScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
 
-  const renderMetricCard = (title: string, value: number, change: string, IconComponent: any, color: string) => (
+  const renderMetricCard = (title: string, value: string | number, change: string, IconComponent: any, color: string) => (
     <Card style={styles.metricCard} variant="elevated">
       <View style={styles.metricHeader}>
         <View style={[styles.metricIcon, { backgroundColor: color + '20' }]}>
@@ -61,7 +87,7 @@ export default function AnalyticsScreen() {
           <Text style={styles.changeText}>{change}</Text>
         </View>
       </View>
-      <Text style={styles.metricValue}>{value.toLocaleString()}</Text>
+      <Text style={styles.metricValue}>{typeof value === 'number' ? value.toLocaleString() : value}</Text>
       <Text style={styles.metricTitle}>{title}</Text>
     </Card>
   );
@@ -101,8 +127,8 @@ export default function AnalyticsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Analytics Dashboard</Text>
-        <Text style={styles.headerSubtitle}>Comprehensive system insights and trends</Text>
+        <Text style={styles.headerTitle}>Reports Analytics</Text>
+        <Text style={styles.headerSubtitle}>Comprehensive insights into facility reports and trends</Text>
       </View>
 
       {/* Period Selector */}
@@ -125,26 +151,26 @@ export default function AnalyticsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Key Metrics</Text>
           <View style={styles.metricsGrid}>
-            {renderMetricCard('Total Users', ANALYTICS_DATA.overview.totalUsers, '+12%', Users, COLORS.info)}
-            {renderMetricCard('Total Reports', ANALYTICS_DATA.overview.totalReports, '+8%', FileText, COLORS.warning)}
-            {renderMetricCard('Total Feedback', ANALYTICS_DATA.overview.totalUsers, '+15%', MessageSquare, COLORS.error)}
-            {renderMetricCard('Active Cases', ANALYTICS_DATA.overview.totalUsers, '+5%', Activity, COLORS.success)}
+            {renderMetricCard('Total Reports', REPORTS_ANALYTICS.overview.totalReports, '+23%', FileText, COLORS.primary)}
+            {renderMetricCard('Pending Reports', REPORTS_ANALYTICS.overview.pendingReports, '+12%', Clock, COLORS.warning)}
+            {renderMetricCard('Approved Reports', REPORTS_ANALYTICS.overview.approvedReports, '+18%', CheckCircle, COLORS.success)}
+            {renderMetricCard('Avg Resolution Time', REPORTS_ANALYTICS.overview.avgResolutionTime, '-8%', Activity, COLORS.info)}
           </View>
         </View>
 
-        {/* Trends */}
+        {/* Monthly Trends */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Growth Trends</Text>
+          <Text style={styles.sectionTitle}>Monthly Report Trends</Text>
           <Card style={styles.trendsCard} variant="elevated">
             <View style={styles.trendChart}>
-              <Text style={styles.trendTitle}>User Registration</Text>
+              <Text style={styles.trendTitle}>Reports Submitted</Text>
               <View style={styles.trendBars}>
-                {ANALYTICS_DATA.trends.monthlyReports.map((data, index) => (
+                {REPORTS_ANALYTICS.monthlyTrends.map((data, index) => (
                   <View key={data.month} style={styles.trendBar}>
                     <View
                       style={[styles.trendFill, {
-                        height: `${(data.reports / 20) * 100}%`,
-                        backgroundColor: COLORS.info
+                        height: `${(data.reports / 90) * 100}%`,
+                        backgroundColor: COLORS.primary
                       }]}
                     />
                     <Text style={styles.trendLabel}>{data.month}</Text>
@@ -155,18 +181,18 @@ export default function AnalyticsScreen() {
             </View>
 
             <View style={styles.trendChart}>
-              <Text style={styles.trendTitle}>Report Submissions</Text>
+              <Text style={styles.trendTitle}>Reports Resolved</Text>
               <View style={styles.trendBars}>
-                {ANALYTICS_DATA.trends.monthlyReports.map((data, index) => (
+                {REPORTS_ANALYTICS.monthlyTrends.map((data, index) => (
                   <View key={data.month} style={styles.trendBar}>
                     <View
                       style={[styles.trendFill, {
-                        height: `${(data.reports / 20) * 100}%`,
-                        backgroundColor: COLORS.warning
+                        height: `${(data.resolved / 60) * 100}%`,
+                        backgroundColor: COLORS.success
                       }]}
                     />
                     <Text style={styles.trendLabel}>{data.month}</Text>
-                    <Text style={styles.trendValue}>{data.reports}</Text>
+                    <Text style={styles.trendValue}>{data.resolved}</Text>
                   </View>
                 ))}
               </View>
@@ -174,12 +200,45 @@ export default function AnalyticsScreen() {
           </Card>
         </View>
 
+        {/* Relevance Distribution */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Report Relevance Distribution</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            {REPORTS_ANALYTICS.relevanceDistribution.map(data => (
+              <View key={data.relevance} style={styles.relevanceItem}>
+                <View style={styles.relevanceHeader}>
+                  <Text style={styles.relevanceLabel}>{data.relevance}</Text>
+                  <Text style={styles.relevanceValue}>{data.count} ({data.percentage}%)</Text>
+                </View>
+                <View style={styles.relevanceBar}>
+                  <View
+                    style={[styles.relevanceFill, {
+                      width: `${data.percentage}%`,
+                      backgroundColor: data.color
+                    }]}
+                  />
+                </View>
+              </View>
+            ))}
+          </Card>
+        </View>
+
+        {/* Top Diseases by Cases */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Top Diseases by Reported Cases</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            {REPORTS_ANALYTICS.topDiseasesByCases.map(data =>
+              renderChartBar(data, Math.max(...REPORTS_ANALYTICS.topDiseasesByCases.map(d => d.cases)))
+            )}
+          </Card>
+        </View>
+
         {/* State-wise Breakdown */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>State-wise Breakdown</Text>
+          <Text style={styles.sectionTitle}>Reports by State</Text>
           <Card style={styles.chartCard} variant="outlined">
-            {ANALYTICS_DATA.byState.map(data =>
-              renderChartBar(data, Math.max(...ANALYTICS_DATA.byState.map(d => d.reports)))
+            {REPORTS_ANALYTICS.byState.map(data =>
+              renderChartBar(data, Math.max(...REPORTS_ANALYTICS.byState.map(d => d.reports)))
             )}
           </Card>
         </View>
@@ -188,29 +247,71 @@ export default function AnalyticsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Report Categories</Text>
           <Card style={styles.categoriesCard} variant="outlined">
-            {ANALYTICS_DATA.byCategory.map(category =>
-              renderChartBar(category, Math.max(...ANALYTICS_DATA.byCategory.map(c => c.count)))
+            {REPORTS_ANALYTICS.byCategory.map(category =>
+              renderChartBar(category, Math.max(...REPORTS_ANALYTICS.byCategory.map(c => c.count)))
             )}
           </Card>
         </View>
 
-        {/* Priority Distribution */}
+        {/* Response Time Analysis */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Reports by Priority</Text>
+          <Text style={styles.sectionTitle}>Response Time Analysis</Text>
           <Card style={styles.chartCard} variant="outlined">
-            {ANALYTICS_DATA.byPriority.map(data =>
-              renderPieSegment(data, ANALYTICS_DATA.overview.totalReports)
+            {REPORTS_ANALYTICS.responseTimeAnalysis.map(data =>
+              renderPieSegment(data, REPORTS_ANALYTICS.overview.totalReports)
             )}
           </Card>
         </View>
 
-        {/* Status Distribution */}
+        {/* Facility Performance */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Reports by Status</Text>
+          <Text style={styles.sectionTitle}>Top Performing Facilities</Text>
           <Card style={styles.chartCard} variant="outlined">
-            {ANALYTICS_DATA.byStatus.map(data =>
-              renderPieSegment(data, ANALYTICS_DATA.overview.totalReports)
-            )}
+            {REPORTS_ANALYTICS.facilityPerformance.map(data => (
+              <View key={data.facility} style={styles.facilityItem}>
+                <View style={styles.facilityInfo}>
+                  <Text style={styles.facilityName}>{data.facility}</Text>
+                  <Text style={styles.facilityStats}>{data.reports} reports • {data.avgRating}★ avg</Text>
+                </View>
+                <View style={styles.facilityBar}>
+                  <View
+                    style={[styles.facilityFill, {
+                      width: `${(data.avgRating / 5) * 100}%`,
+                      backgroundColor: data.avgRating >= 4 ? COLORS.success : data.avgRating >= 3 ? COLORS.warning : COLORS.error
+                    }]}
+                  />
+                </View>
+              </View>
+            ))}
+          </Card>
+        </View>
+
+        {/* User Engagement */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>User Engagement Trends</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            <View style={styles.engagementGrid}>
+              <View style={styles.engagementItem}>
+                <Text style={styles.engagementValue}>89%</Text>
+                <Text style={styles.engagementLabel}>App Usage</Text>
+                <Text style={styles.engagementChange}>Daily active users</Text>
+              </View>
+              <View style={styles.engagementItem}>
+                <Text style={styles.engagementValue}>4.2</Text>
+                <Text style={styles.engagementLabel}>Avg Rating</Text>
+                <Text style={styles.engagementChange}>User satisfaction</Text>
+              </View>
+              <View style={styles.engagementItem}>
+                <Text style={styles.engagementValue}>156</Text>
+                <Text style={styles.engagementLabel}>Feedback</Text>
+                <Text style={styles.engagementChange}>Positive responses</Text>
+              </View>
+              <View style={styles.engagementItem}>
+                <Text style={styles.engagementValue}>3.2</Text>
+                <Text style={styles.engagementLabel}>Avg Response</Text>
+                <Text style={styles.engagementChange}>Resolution time</Text>
+              </View>
+            </View>
           </Card>
         </View>
       </ScrollView>
@@ -278,4 +379,27 @@ const styles = StyleSheet.create({
   segmentValue: { ...TYPOGRAPHY.body2, fontWeight: '600', color: COLORS.primary },
   segmentBar: { height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
   segmentFill: { height: '100%', borderRadius: 4 },
+
+  // Relevance Distribution
+  relevanceItem: { marginBottom: SPACING.md },
+  relevanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm },
+  relevanceLabel: { ...TYPOGRAPHY.body2, color: COLORS.text, fontWeight: '600' },
+  relevanceValue: { ...TYPOGRAPHY.body2, color: COLORS.primary, fontWeight: '600' },
+  relevanceBar: { height: 12, backgroundColor: COLORS.border, borderRadius: 6, overflow: 'hidden' },
+  relevanceFill: { height: '100%', borderRadius: 6 },
+
+  // Facility Performance
+  facilityItem: { marginBottom: SPACING.md },
+  facilityInfo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm },
+  facilityName: { ...TYPOGRAPHY.body2, color: COLORS.text, fontWeight: '600', flex: 1 },
+  facilityStats: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  facilityBar: { height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
+  facilityFill: { height: '100%', borderRadius: 4 },
+
+  // User Engagement
+  engagementGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  engagementItem: { flex: 1, minWidth: '45%', alignItems: 'center', padding: SPACING.md, margin: SPACING.xs, backgroundColor: COLORS.surface, borderRadius: 8 },
+  engagementValue: { ...TYPOGRAPHY.h2, color: COLORS.primary, fontWeight: '700' },
+  engagementLabel: { ...TYPOGRAPHY.body2, color: COLORS.text, marginTop: SPACING.xs },
+  engagementChange: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginTop: SPACING.xs },
 });

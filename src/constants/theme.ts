@@ -1,25 +1,37 @@
+import {
+  Baby,
+  Hospital,
+  Handshake,
+  CreditCard,
+  Milk,
+  DollarSign,
+  FileText,
+  BarChart3,
+  type LucideIcon
+} from 'lucide-react-native';
+
 export const COLORS = {
-  primary: '#2E7D32',
-  primaryDark: '#1B5E20',
-  primaryLight: '#4CAF50',
-  secondary: '#D32F2F',
-  secondaryDark: '#B71C1C',
-  secondaryLight: '#F44336',
-  accent: '#FFC107',
-  background: '#FFFFFF',
+  primary: '#00695C', // Richer Teal/Green
+  primaryDark: '#004D40',
+  primaryLight: '#4DB6AC',
+  secondary: '#C62828', // Deeper Red
+  secondaryDark: '#8E0000',
+  secondaryLight: '#EF5350',
+  accent: '#FFD740', // Amber Accent
+  background: '#F8F9FA', // Softer White
   backgroundDark: '#121212',
-  surface: '#F5F5F5',
+  surface: '#FFFFFF',
   surfaceDark: '#1E1E1E',
-  text: '#212121',
-  textDark: '#E0E0E0',
-  textSecondary: '#757575',
-  textSecondaryDark: '#B0B0B0',
-  border: '#E0E0E0',
-  borderDark: '#424242',
+  text: '#263238', // Blue-ish Grey for text instead of pure black
+  textDark: '#ECEFF1',
+  textSecondary: '#546E7A',
+  textSecondaryDark: '#B0BEC5',
+  border: '#CFD8DC',
+  borderDark: '#37474F',
   error: '#D32F2F',
-  warning: '#F57C00',
-  info: '#1976D2',
-  success: '#388E3C',
+  warning: '#FFA000',
+  info: '#0288D1',
+  success: '#2E7D32',
   white: '#FFFFFF',
   black: '#000000',
   priorityLow: '#4CAF50',
@@ -30,11 +42,11 @@ export const COLORS = {
   severityMedium: '#FFC107',
   severityHigh: '#FF9800',
   severityCritical: '#D32F2F',
-  statusPending: '#FFC107',
-  statusApproved: '#4CAF50',
-  statusRejected: '#D32F2F',
-  statusDraft: '#9E9E9E',
-  statusResolved: '#4CAF50',
+  statusPending: '#FFA000',
+  statusApproved: '#2E7D32',
+  statusRejected: '#C62828',
+  statusDraft: '#78909C',
+  statusResolved: '#2E7D32',
 };
 
 export const SPACING = {
@@ -60,13 +72,22 @@ export const TYPOGRAPHY = {
 export const STATES = ['Lagos', 'Abuja', 'Kano', 'Kaduna'];
 export const ZONES = ['North', 'South', 'East', 'West', 'Federal'] as const;
 
-export const THEMATIC_CATEGORIES = [
+export interface ThematicCategory {
+  id: string;
+  name: string;
+  fullName: string;
+  description: string;
+  icon: LucideIcon;
+  color: string;
+}
+
+export const THEMATIC_CATEGORIES: ThematicCategory[] = [
   {
     id: '1',
     name: 'RMNCAH',
     fullName: 'Reproductive Maternal, Newborn, Child, and Adolescent Health',
     description: 'Comprehensive health services for mothers, newborns, children, and adolescents',
-    icon: '👶',
+    icon: Baby,
     color: '#E91E63',
   },
   {
@@ -74,7 +95,7 @@ export const THEMATIC_CATEGORIES = [
     name: 'Primary Health Care',
     fullName: 'Primary Health Care',
     description: 'Basic health services and facilities at the community level',
-    icon: '🏥',
+    icon: Hospital,
     color: '#2196F3',
   },
   {
@@ -82,7 +103,7 @@ export const THEMATIC_CATEGORIES = [
     name: 'SWAp',
     fullName: 'Sector Wide Approach',
     description: 'Coordinated approach to health sector development and financing',
-    icon: '🤝',
+    icon: Handshake,
     color: '#9C27B0',
   },
   {
@@ -90,7 +111,7 @@ export const THEMATIC_CATEGORIES = [
     name: 'Contributory Health Insurance',
     fullName: 'National Health Insurance Scheme',
     description: 'Healthcare financing and insurance coverage programs',
-    icon: '💳',
+    icon: CreditCard,
     color: '#FF9800',
   },
   {
@@ -98,7 +119,7 @@ export const THEMATIC_CATEGORIES = [
     name: 'Small and Sick Newborn',
     fullName: 'Small and Sick Newborn Care',
     description: 'Specialized care for premature and critically ill newborns',
-    icon: '🍼',
+    icon: Milk,
     color: '#F44336',
   },
   {
@@ -106,7 +127,7 @@ export const THEMATIC_CATEGORIES = [
     name: 'Health Budget/Finance',
     fullName: 'Health Budget and Finance',
     description: 'Healthcare funding, budgets, and financial management',
-    icon: '💰',
+    icon: DollarSign,
     color: '#4CAF50',
   },
   {
@@ -114,7 +135,7 @@ export const THEMATIC_CATEGORIES = [
     name: 'Health Policy/Legislation',
     fullName: 'Health Policy and Legislation',
     description: 'Healthcare laws, policies, and regulatory frameworks',
-    icon: '📋',
+    icon: FileText,
     color: '#00BCD4',
   },
   {
@@ -122,7 +143,7 @@ export const THEMATIC_CATEGORIES = [
     name: 'Health Accountability',
     fullName: 'Health Accountability and Transparency',
     description: 'Monitoring, evaluation, and transparency in healthcare delivery',
-    icon: '📊',
+    icon: BarChart3,
     color: '#673AB7',
   },
 ];

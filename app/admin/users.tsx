@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/src/store';
-import { fetchUsers, updateUserRole, User } from '@/src/store/slices/adminSlice';
+import { fetchUsers, updateUserRole } from '@/src/store/slices/adminSlice';
+import { Profile, UserRole } from '@/src/types';
 import { Card } from '@/src/components/Card';
 import { Badge } from '@/src/components/Badge';
 import { Button } from '@/src/components/Button';
@@ -19,9 +20,9 @@ import { ArrowLeft, Users as UsersIcon, UserCheck, UserX } from 'lucide-react-na
 import { router } from 'expo-router';
 
 export default function UsersManagementScreen() {
-  const dispatch = useDispatch<AppDispatch>();
-  const { users, loading, error } = useSelector((state: RootState) => state.admin);
-  const { user: currentUser } = useSelector((state: RootState) => state.auth);
+   const dispatch = useDispatch<AppDispatch>();
+   const { users, loading, error } = useSelector((state: RootState) => state.admin);
+   const { profile: currentUser } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     dispatch(fetchUsers());
@@ -36,20 +37,21 @@ export default function UsersManagementScreen() {
         {
           text: 'Update',
           onPress: () => {
-            dispatch(updateUserRole({ userId, role: newRole }));
+            const role = newRole as UserRole;
+            dispatch(updateUserRole({ userId, role }));
           },
         },
       ]
     );
   };
 
-  const canManageUser = (targetUser: User) => {
+  const canManageUser = (targetUser: Profile) => {
     // State admins can only manage users from their state
     if (currentUser?.role === 'state_admin') {
       return targetUser.state === currentUser.state && targetUser.id !== currentUser.id;
     }
     // Regular admins can manage all users except themselves
-    return currentUser?.role === 'admin' && targetUser.id !== currentUser.id;
+    return currentUser?.role === 'super_admin' && targetUser.id !== currentUser.id;
   };
 
   const getRoleColor = (role: string) => {
@@ -85,7 +87,7 @@ export default function UsersManagementScreen() {
           <Card style={styles.statCard} variant="elevated">
             <UserCheck size={24} color={COLORS.success} />
             <Text style={styles.statValue}>
-              {users.filter(u => u.role === 'staff' || u.role === 'admin' || u.role === 'state_admin').length}
+              {users.filter(u => u.role === 'staff' || u.role === 'super_admin' || u.role === 'state_admin').length}
             </Text>
             <Text style={styles.statLabel}>Active Staff</Text>
           </Card>
@@ -120,7 +122,7 @@ export default function UsersManagementScreen() {
                           styles.roleButton,
                           user.role === role && styles.roleButtonActive
                         ]}
-                        onPress={() => handleRoleUpdate(user.id, role, user.full_name)}
+                        onPress={() => handleRoleUpdate(user.id, role, user.full_name || '')}
                       >
                         <Text style={[
                           styles.roleButtonText,

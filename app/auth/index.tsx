@@ -34,7 +34,7 @@ export default function AuthScreen() {
   const handleAuth = async () => {
     try {
       if (isSignUp) {
-        await dispatch(signUp({ email, password, fullName, state })).unwrap();
+        await dispatch(signUp({ email, password, fullName, role: 'public', state })).unwrap();
         Toast.show({
           type: 'success',
           text1: 'Account Created',

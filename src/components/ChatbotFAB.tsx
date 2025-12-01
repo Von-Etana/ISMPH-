@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,9 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { COLORS, SPACING, TYPOGRAPHY } from '../constants/theme';
 import { MessageCircle, X, Send, Bot } from 'lucide-react-native';
 
@@ -40,10 +42,12 @@ export const ChatbotFAB: React.FC = () => {
     },
   ]);
   const [inputText, setInputText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const getAIResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
-    
+
     if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
       return AI_RESPONSES.hello;
     }
@@ -59,7 +63,7 @@ export const ChatbotFAB: React.FC = () => {
     if (lowerMessage.includes('emergency') || lowerMessage.includes('urgent')) {
       return AI_RESPONSES.emergency;
     }
-    
+
     return AI_RESPONSES.default;
   };
 
@@ -75,25 +79,35 @@ export const ChatbotFAB: React.FC = () => {
 
     setMessages((prev) => [...prev, userMessage]);
     setInputText('');
+    setIsTyping(true);
 
     setTimeout(() => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: getAIResponse(inputText),
+        text: getAIResponse(userMessage.text),
         isUser: false,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMessage]);
-    }, 1000);
+      setIsTyping(false);
+    }, 1500);
   };
+
+  useEffect(() => {
+    if (visible) {
+      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+    }
+  }, [messages, visible]);
 
   return (
     <>
       <TouchableOpacity
         style={styles.fab}
         onPress={() => setVisible(true)}
+        activeOpacity={0.8}
       >
-        <MessageCircle size={24} color={COLORS.white} />
+        <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
+        <MessageCircle size={28} color={COLORS.white} />
       </TouchableOpacity>
 
       <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
@@ -111,12 +125,16 @@ export const ChatbotFAB: React.FC = () => {
                 <Text style={styles.headerSubtitle}>Online • Instant replies</Text>
               </View>
             </View>
-            <TouchableOpacity onPress={() => setVisible(false)}>
-              <X size={24} color={COLORS.text} />
+            <TouchableOpacity onPress={() => setVisible(false)} style={styles.closeButton}>
+              <X size={24} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.messagesContainer} contentContainerStyle={styles.messagesContent}>
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.messagesContainer}
+            contentContainerStyle={styles.messagesContent}
+          >
             {messages.map((message) => (
               <View
                 key={message.id}
@@ -133,6 +151,11 @@ export const ChatbotFAB: React.FC = () => {
                 </Text>
               </View>
             ))}
+            {isTyping && (
+              <View style={[styles.messageBubble, styles.aiMessage, styles.typingBubble]}>
+                <Text style={styles.typingText}>Typing...</Text>
+              </View>
+            )}
           </ScrollView>
 
           <View style={styles.inputContainer}>
@@ -145,7 +168,11 @@ export const ChatbotFAB: React.FC = () => {
               multiline
               placeholderTextColor={COLORS.textSecondary}
             />
-            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <TouchableOpacity
+              style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+              onPress={handleSend}
+              disabled={!inputText.trim()}
+            >
               <Send size={20} color={COLORS.white} />
             </TouchableOpacity>
           </View>
@@ -159,18 +186,19 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: SPACING.lg,
-    bottom: 80,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.info,
+    bottom: 100, // Adjusted for tab bar
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowRadius: 8,
   },
   modalContainer: {
     flex: 1,
@@ -181,8 +209,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: SPACING.lg,
-    paddingTop: SPACING.xl + 20,
-    backgroundColor: COLORS.white,
+    paddingTop: SPACING.xl + 10,
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
@@ -192,74 +220,103 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
   botIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.info,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
     ...TYPOGRAPHY.body1,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.text,
   },
   headerSubtitle: {
     ...TYPOGRAPHY.caption,
     color: COLORS.success,
+    fontWeight: '600',
+  },
+  closeButton: {
+    padding: SPACING.xs,
   },
   messagesContainer: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   messagesContent: {
     padding: SPACING.md,
+    paddingBottom: SPACING.xl,
   },
   messageBubble: {
     maxWidth: '80%',
     padding: SPACING.md,
-    borderRadius: 16,
+    borderRadius: 20,
     marginBottom: SPACING.sm,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
   userMessage: {
     alignSelf: 'flex-end',
     backgroundColor: COLORS.primary,
+    borderBottomRightRadius: 4,
   },
   aiMessage: {
     alignSelf: 'flex-start',
     backgroundColor: COLORS.surface,
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  typingBubble: {
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+  },
+  typingText: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textSecondary,
+    fontStyle: 'italic',
   },
   messageText: {
     ...TYPOGRAPHY.body2,
     color: COLORS.text,
-    marginBottom: SPACING.xs,
+    marginBottom: 4,
   },
   userMessageText: {
     color: COLORS.white,
   },
   messageTime: {
     ...TYPOGRAPHY.caption,
+    fontSize: 10,
     color: COLORS.textSecondary,
+    alignSelf: 'flex-end',
   },
   userMessageTime: {
-    color: COLORS.white,
-    opacity: 0.8,
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   inputContainer: {
     flexDirection: 'row',
     padding: SPACING.md,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     gap: SPACING.sm,
+    alignItems: 'flex-end',
   },
   input: {
     flex: 1,
     ...TYPOGRAPHY.body1,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.background,
     borderRadius: 24,
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
     maxHeight: 100,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    color: COLORS.text,
   },
   sendButton: {
     width: 44,
@@ -268,5 +325,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: COLORS.textSecondary,
+    opacity: 0.5,
   },
 });

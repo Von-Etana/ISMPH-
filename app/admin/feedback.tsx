@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
+  Image,
 } from 'react-native';
 import { Card } from '@/src/components/Card';
 import { Button } from '@/src/components/Button';
@@ -208,6 +209,13 @@ export default function AdminFeedbackScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => {}}>
+          <Image
+            source={require('@/assets/images/WhatsApp Image 2025-11-08 at 09.39.48_7cb724fe.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Feedback Management</Text>
         <Text style={styles.headerSubtitle}>Handle user feedback and complaints</Text>
       </View>
@@ -418,7 +426,8 @@ export default function AdminFeedbackScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20 },
+  header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20, alignItems: 'center' },
+  logo: { width: 60, height: 60, marginBottom: SPACING.sm },
   headerTitle: { ...TYPOGRAPHY.h2, color: COLORS.white },
   headerSubtitle: { ...TYPOGRAPHY.body2, color: COLORS.white, opacity: 0.9, marginTop: SPACING.xs },
 

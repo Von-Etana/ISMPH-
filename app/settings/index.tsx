@@ -9,8 +9,8 @@ import { ArrowLeft, User, Globe, HelpCircle, LogOut } from 'lucide-react-native'
 import Toast from 'react-native-toast-message';
 
 export default function SettingsScreen() {
-  const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
+   const dispatch = useDispatch<AppDispatch>();
+   const { profile } = useSelector((state: RootState) => state.auth);
 
   const handleSignOut = async () => {
     // Implement sign out logic here
@@ -82,9 +82,9 @@ export default function SettingsScreen() {
                 <User size={32} color={COLORS.white} />
               </View>
               <View style={styles.userDetails}>
-                <Text style={styles.userName}>{user?.full_name || user?.email?.split('@')[0] || 'User'}</Text>
-                <Text style={styles.userEmail}>{user?.email}</Text>
-                <Text style={styles.userRole}>{user?.role?.toUpperCase()}</Text>
+                <Text style={styles.userName}>{profile?.full_name || profile?.email?.split('@')[0] || 'User'}</Text>
+                <Text style={styles.userEmail}>{profile?.email}</Text>
+                <Text style={styles.userRole}>{profile?.role?.toUpperCase()}</Text>
               </View>
             </View>
           </Card>

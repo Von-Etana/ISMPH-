@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, TextInputProps } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { COLORS, SPACING, TYPOGRAPHY } from '../constants/theme';
 
-interface FormInputProps {
+interface FormInputProps extends Omit<TextInputProps, 'secureTextEntry'> {
   label?: string;
   value: string;
   onChangeText: (text: string) => void;
@@ -11,7 +11,6 @@ interface FormInputProps {
   required?: boolean;
   secureTextEntry?: boolean;
   showPasswordToggle?: boolean;
-  [key: string]: any;
 }
 
 export const FormInput: React.FC<FormInputProps> = ({

@@ -11,6 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
+import { router } from 'expo-router';
 import { RootState, AppDispatch } from '@/src/store';
 import { submitReport } from '@/src/store/slices/reportsSlice';
 import { Card } from '@/src/components/Card';
@@ -47,6 +48,7 @@ const DEMO_REPORTS = [
     createdAt: '2025-10-28',
     contactName: 'John Doe',
     contactPhone: '080-1234-5678',
+    reporterName: 'John Doe',
   },
   {
     id: '2',
@@ -59,6 +61,7 @@ const DEMO_REPORTS = [
     createdAt: '2025-10-27',
     contactName: 'Jane Smith',
     contactEmail: 'jane@example.com',
+    reporterName: 'Jane Smith',
   },
 ];
 
@@ -98,7 +101,7 @@ const ANALYTICS_DATA = {
 
 export default function ReportsScreen() {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { profile } = useSelector((state: RootState) => state.auth);
   const { loading } = useSelector((state: RootState) => state.reports);
   const [showForm, setShowForm] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'all' | 'my' | 'pending'>('all');
@@ -108,9 +111,9 @@ export default function ReportsScreen() {
     title: '',
     category: 'Service Quality',
     description: '',
-    state: user?.state || 'Lagos',
+    state: profile?.state || 'Lagos',
     priority: 'medium' as 'low' | 'medium' | 'high',
-    reporterName: user?.full_name || '',
+    reporterName: profile?.full_name || '',
     reporterPhone: '',
     reporterAddress: '',
   });
@@ -209,8 +212,7 @@ export default function ReportsScreen() {
     try {
       await dispatch(submitReport({
         ...formData,
-        reporterEmail: user?.email || '', // Auto-populate from user
-        mediaAttachments: selectedImages,
+        user_id: profile?.id,
       })).unwrap();
 
       Toast.show({
@@ -224,9 +226,9 @@ export default function ReportsScreen() {
         title: '',
         category: 'Service Quality',
         description: '',
-        state: user?.state || 'Lagos',
+        state: profile?.state || 'Lagos',
         priority: 'medium',
-        reporterName: user?.full_name || '',
+        reporterName: profile?.full_name || '',
         reporterPhone: '',
         reporterAddress: '',
       });
@@ -338,21 +340,21 @@ export default function ReportsScreen() {
 
       <ScrollView style={styles.content}>
         <View style={styles.statsRow}>
-          <TouchableOpacity onPress={() => setSelectedTab('all')}>
+          <TouchableOpacity onPress={() => router.push('/reports/total')}>
             <Card style={styles.statCard} variant="elevated">
               <FileText size={24} color={COLORS.info} />
               <Text style={styles.statValue}>{ANALYTICS_DATA.overview.totalReports}</Text>
               <Text style={styles.statLabel}>Total</Text>
             </Card>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setSelectedTab('pending')}>
+          <TouchableOpacity onPress={() => router.push('/reports/pending')}>
             <Card style={styles.statCard} variant="elevated">
               <Clock size={24} color={COLORS.warning} />
               <Text style={styles.statValue}>{ANALYTICS_DATA.overview.pendingReports}</Text>
               <Text style={styles.statLabel}>Pending</Text>
             </Card>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setSelectedTab('all')}>
+          <TouchableOpacity onPress={() => router.push('/reports/approved')}>
             <Card style={styles.statCard} variant="elevated">
               <CheckCircle size={24} color={COLORS.success} />
               <Text style={styles.statValue}>{ANALYTICS_DATA.overview.approvedReports}</Text>
@@ -370,7 +372,7 @@ export default function ReportsScreen() {
           {DEMO_REPORTS
             .filter(report => {
               if (selectedTab === 'pending') return report.status === 'pending';
-              if (selectedTab === 'my') return report.reporterName === user?.full_name;
+              if (selectedTab === 'my') return report.reporterName === profile?.full_name;
               return true;
             })
             .map(renderReport)}

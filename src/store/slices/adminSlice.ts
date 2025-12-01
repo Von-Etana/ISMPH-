@@ -1,14 +1,7 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { supabase } from '../../services/supabase';
-
-export interface User {
-  id: string;
-  email: string;
-  full_name: string;
-  role: 'public' | 'staff' | 'admin' | 'state_admin';
-  state: string;
-  created_at: string;
-}
+import { Profile, UserRole } from '../../types';
+import { toApiError } from '../../types/supabase';
 
 export interface StateProgramOfficer {
   name: string;
@@ -20,7 +13,7 @@ export interface StateProgramOfficer {
 }
 
 interface AdminState {
-  users: User[];
+  users: Profile[];
   stateOfficers: StateProgramOfficer[];
   loading: boolean;
   error: string | null;
@@ -58,7 +51,11 @@ const initialState: AdminState = {
   error: null,
 };
 
-export const fetchUsers = createAsyncThunk(
+export const fetchUsers = createAsyncThunk<
+  Profile[],
+  void,
+  { rejectValue: string }
+>(
   'admin/fetchUsers',
   async (_, { rejectWithValue }) => {
     try {
@@ -68,16 +65,21 @@ export const fetchUsers = createAsyncThunk(
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      return (data || []) as Profile[];
+    } catch (error) {
+      const apiError = toApiError(error);
+      return rejectWithValue(apiError.message);
     }
   }
 );
 
-export const updateUserRole = createAsyncThunk(
+export const updateUserRole = createAsyncThunk<
+  Profile,
+  { userId: string; role: UserRole },
+  { rejectValue: string }
+>(
   'admin/updateUserRole',
-  async ({ userId, role }: { userId: string; role: string }, { rejectWithValue }) => {
+  async ({ userId, role }, { rejectWithValue }) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -87,9 +89,12 @@ export const updateUserRole = createAsyncThunk(
         .single();
 
       if (error) throw error;
-      return data;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
+      if (!data) throw new Error('Failed to update user role');
+
+      return data as Profile;
+    } catch (error) {
+      const apiError = toApiError(error);
+      return rejectWithValue(apiError.message);
     }
   }
 );
@@ -114,7 +119,7 @@ const adminSlice = createSlice({
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload || 'Failed to fetch users';
       })
       .addCase(updateUserRole.pending, (state) => {
         state.loading = true;
@@ -129,7 +134,7 @@ const adminSlice = createSlice({
       })
       .addCase(updateUserRole.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload || 'Failed to update user role';
       });
   },
 });

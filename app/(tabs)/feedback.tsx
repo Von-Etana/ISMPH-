@@ -473,10 +473,10 @@ export default function FeedbackScreen() {
               </Text>
 
               {selectedFeedback.actionTaken && (
-                <Card style={styles.actionCard} variant="elevated">
+                <Card style={styles.actionTakenCard} variant="elevated">
                   <View style={styles.actionHeader}>
                     <CheckCircle size={20} color={COLORS.success} />
-                    <Text style={styles.actionTitle}>Action Taken</Text>
+                    <Text style={styles.actionTakenTitle}>Action Taken</Text>
                   </View>
                   <Text style={styles.actionDescription}>{selectedFeedback.actionTaken}</Text>
                 </Card>
@@ -596,9 +596,9 @@ const styles = StyleSheet.create({
   descriptionLabel: { ...TYPOGRAPHY.body2, fontWeight: '600', marginBottom: SPACING.xs },
   descriptionText: { ...TYPOGRAPHY.body2, color: COLORS.textSecondary },
   submittedDate: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginBottom: SPACING.lg },
-  actionCard: { backgroundColor: COLORS.success + '10', marginBottom: SPACING.md },
+  actionTakenCard: { backgroundColor: COLORS.success + '10', marginBottom: SPACING.md },
   actionHeader: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm },
-  actionTitle: { ...TYPOGRAPHY.body1, fontWeight: '600', color: COLORS.success },
+  actionTakenTitle: { ...TYPOGRAPHY.body1, fontWeight: '600', color: COLORS.success },
   actionDescription: { ...TYPOGRAPHY.body2, color: COLORS.text },
   messageCard: { backgroundColor: COLORS.info + '10', marginBottom: SPACING.md },
   messageHeader: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm },
