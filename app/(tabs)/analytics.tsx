@@ -9,7 +9,27 @@ import {
 } from 'react-native';
 import { Card } from '@/src/components/Card';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
-import { BarChart3, TrendingUp, Users, FileText, MessageSquare, Activity, Calendar, MapPin, PieChart, Clock, CheckCircle } from 'lucide-react-native';
+import { BarChart3, TrendingUp, Users, FileText, MessageSquare, Activity, Calendar, MapPin, PieChart, Clock, CheckCircle, type LucideIcon } from 'lucide-react-native';
+
+interface ChartData {
+  month?: string;
+  category?: string;
+  state?: string;
+  disease?: string;
+  reports?: number;
+  count?: number;
+  percentage?: number;
+  cases?: number;
+}
+
+interface PieData {
+  category?: string;
+  priority?: string;
+  status?: string;
+  range?: string;
+  count: number;
+  percentage: number;
+}
 
 const { width } = Dimensions.get('window');
 
@@ -76,7 +96,7 @@ const REPORTS_ANALYTICS = {
 export default function AnalyticsScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
 
-  const renderMetricCard = (title: string, value: string | number, change: string, IconComponent: any, color: string) => (
+  const renderMetricCard = (title: string, value: string | number, change: string, IconComponent: LucideIcon, color: string) => (
     <Card style={styles.metricCard} variant="elevated">
       <View style={styles.metricHeader}>
         <View style={[styles.metricIcon, { backgroundColor: color + '20' }]}>
@@ -92,12 +112,12 @@ export default function AnalyticsScreen() {
     </Card>
   );
 
-  const renderChartBar = (data: any, maxValue: number) => (
+  const renderChartBar = (data: ChartData, maxValue: number) => (
     <View key={data.month || data.category || data.state} style={styles.chartBar}>
       <View style={styles.barContainer}>
         <View
           style={[styles.barFill, {
-            width: `${(data.reports || data.count || data.percentage) / maxValue * 100}%`,
+            width: `${((data.reports || data.count || data.percentage || 0) / maxValue) * 100}%`,
             backgroundColor: COLORS.primary
           }]}
         />
@@ -107,7 +127,7 @@ export default function AnalyticsScreen() {
     </View>
   );
 
-  const renderPieSegment = (data: any, total: number) => (
+  const renderPieSegment = (data: PieData, total: number) => (
     <View key={data.category || data.priority || data.status} style={styles.pieSegment}>
       <View style={styles.segmentInfo}>
         <Text style={styles.segmentLabel}>{data.category || data.priority || data.status}</Text>

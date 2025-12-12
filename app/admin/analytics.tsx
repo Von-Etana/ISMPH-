@@ -19,7 +19,28 @@ import {
   Activity,
   Calendar,
   MapPin,
+  type LucideIcon,
 } from 'lucide-react-native';
+
+interface StateData {
+  state: string;
+  users: number;
+  reports: number;
+  feedback: number;
+  cases: number;
+}
+
+interface CategoryData {
+  category: string;
+  count: number;
+}
+
+interface ActivityItem {
+  type: string;
+  action: string;
+  details: string;
+  time: string;
+}
 
 const { width } = Dimensions.get('window');
 
@@ -68,7 +89,7 @@ const ANALYTICS_DATA = {
 export default function AdminAnalyticsScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
 
-  const renderMetricCard = (title: string, value: number, change: string, IconComponent: any, color: string) => (
+  const renderMetricCard = (title: string, value: number, change: string, IconComponent: LucideIcon, color: string) => (
     <Card style={styles.metricCard} variant="elevated">
       <View style={styles.metricHeader}>
         <View style={[styles.metricIcon, { backgroundColor: color + '20' }]}>
@@ -84,7 +105,7 @@ export default function AdminAnalyticsScreen() {
     </Card>
   );
 
-  const renderStateCard = (stateData: any) => (
+  const renderStateCard = (stateData: StateData) => (
     <Card key={stateData.state} style={styles.stateCard} variant="outlined">
       <View style={styles.stateHeader}>
         <Text style={styles.stateName}>{stateData.state}</Text>
@@ -115,7 +136,7 @@ export default function AdminAnalyticsScreen() {
     </Card>
   );
 
-  const renderCategoryBar = (categoryData: any, maxCount: number) => {
+  const renderCategoryBar = (categoryData: CategoryData, maxCount: number) => {
     const percentage = (categoryData.count / maxCount) * 100;
     return (
       <View key={categoryData.category} style={styles.categoryItem}>
@@ -132,7 +153,7 @@ export default function AdminAnalyticsScreen() {
     );
   };
 
-  const renderActivityItem = (activity: any) => (
+  const renderActivityItem = (activity: ActivityItem) => (
     <View key={`${activity.type}-${activity.time}`} style={styles.activityItem}>
       <Badge
         label={activity.type.toUpperCase()}
@@ -140,8 +161,8 @@ export default function AdminAnalyticsScreen() {
         style={{
           backgroundColor:
             activity.type === 'user' ? COLORS.info + '20' :
-            activity.type === 'report' ? COLORS.warning + '20' :
-            COLORS.error + '20'
+              activity.type === 'report' ? COLORS.warning + '20' :
+                COLORS.error + '20'
         }}
       />
       <View style={styles.activityContent}>

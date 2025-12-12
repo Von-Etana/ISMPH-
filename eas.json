@@ -24,7 +24,11 @@
     },
     "production": {
       "ios": {
-        "resourceClass": "m-medium"
+        "resourceClass": "m-medium",
+        "cache": {
+          "disabled": true
+        },
+        "env": {}
       },
       "android": {
         "resourceClass": "medium",

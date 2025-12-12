@@ -15,6 +15,7 @@ import { router } from 'expo-router';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { RootState, AppDispatch } from '@/src/store';
 import { fetchDiseases } from '@/src/store/slices/diseasesSlice';
+import { Disease, Report } from '@/src/types';
 import { fetchApprovedReports } from '@/src/store/slices/reportsSlice';
 import { Card } from '@/src/components/Card';
 import { Badge } from '@/src/components/Badge';
@@ -55,9 +56,9 @@ export default function HomeScreen() {
 
 
   // Analytics calculations
-  const totalCases = diseases.reduce((sum: number, d: any) => sum + d.total_cases, 0);
-  const totalDeaths = diseases.reduce((sum: number, d: any) => sum + d.mortality, 0);
-  const totalRecovered = diseases.reduce((sum: number, d: any) => sum + d.recovered, 0);
+  const totalCases = diseases.reduce((sum: number, d: Disease) => sum + d.total_cases, 0);
+  const totalDeaths = diseases.reduce((sum: number, d: Disease) => sum + d.mortality, 0);
+  const totalRecovered = diseases.reduce((sum: number, d: Disease) => sum + d.recovered, 0);
   const activeCases = totalCases - totalRecovered - totalDeaths;
 
   if (diseasesLoading && diseases.length === 0) {
@@ -235,7 +236,7 @@ export default function HomeScreen() {
                 <Text style={styles.viewAll}>View All</Text>
               </TouchableOpacity>
             </View>
-            {reports.slice(0, 3).map((report: any) => (
+            {reports.slice(0, 3).map((report: Report) => (
               <Card key={report.id} style={styles.reportCard} variant="elevated">
                 <View style={styles.reportHeader}>
                   <Text style={styles.reportTitle}>{report.title}</Text>

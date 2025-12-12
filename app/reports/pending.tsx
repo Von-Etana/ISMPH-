@@ -13,6 +13,21 @@ import { Badge } from '@/src/components/Badge';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
 import { ArrowLeft, Clock, AlertTriangle, Calendar, MapPin, User } from 'lucide-react-native';
 
+interface PendingReport {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  state: string;
+  status: string;
+  priority: string;
+  createdAt: string;
+  contactName: string;
+  contactPhone: string;
+  reporterName: string;
+  daysPending: number;
+}
+
 const PENDING_REPORTS_DATA = [
   {
     id: '1',
@@ -66,7 +81,7 @@ const PENDING_STATS = {
 };
 
 export default function PendingReportsScreen() {
-  const renderReport = (report: any) => (
+  const renderReport = (report: PendingReport) => (
     <Card key={report.id} style={styles.reportCard} variant="outlined">
       <View style={styles.reportHeader}>
         <View style={styles.reportHeaderLeft}>

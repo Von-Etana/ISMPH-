@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS profiles (
   role TEXT DEFAULT 'public' CHECK (role IN ('public', 'staff', 'state_admin', 'super_admin')),
   state TEXT,
   phone TEXT,
+  avatar_url TEXT,
+  language_preference TEXT DEFAULT 'en' CHECK (language_preference IN ('en', 'ha', 'yo', 'ig')),
+  notification_enabled BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -28,13 +31,14 @@ CREATE TABLE IF NOT EXISTS reports (
   category TEXT NOT NULL,
   description TEXT NOT NULL,
   state TEXT NOT NULL,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
-  priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
+  status TEXT DEFAULT 'pending' CHECK (status IN ('draft', 'pending', 'approved', 'rejected')),
+  priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+  media_urls JSONB DEFAULT '[]'::jsonb,
+  assigned_officer TEXT,
   reporter_name TEXT,
   reporter_phone TEXT,
   reporter_email TEXT,
   reporter_address TEXT,
-  media_attachments JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -44,14 +48,16 @@ CREATE TABLE IF NOT EXISTS reports (
 -- ===========================================
 CREATE TABLE IF NOT EXISTS diseases (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
+  disease_name TEXT NOT NULL,
+  zone TEXT NOT NULL CHECK (zone IN ('North', 'South', 'East', 'West', 'Federal')),
   state TEXT NOT NULL,
-  zone TEXT NOT NULL,
+  new_cases INTEGER DEFAULT 0,
   total_cases INTEGER DEFAULT 0,
-  active_cases INTEGER DEFAULT 0,
+  mortality INTEGER DEFAULT 0,
   recovered INTEGER DEFAULT 0,
-  deaths INTEGER DEFAULT 0,
-  last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  severity TEXT DEFAULT 'low' CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+  last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ===========================================
@@ -71,12 +77,12 @@ CREATE TABLE IF NOT EXISTS messages (
 CREATE TABLE IF NOT EXISTS feedback (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id),
-  facility_name TEXT,
-  issue_type TEXT,
+  facility_name TEXT NOT NULL,
+  category TEXT NOT NULL,
   description TEXT NOT NULL,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'in_review', 'resolved', 'closed')),
-  priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
-  contact_info TEXT,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'resolved', 'critical')),
+  priority TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+  state TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -343,17 +349,17 @@ INSERT INTO profiles (id, full_name, email, role, state, phone) VALUES
   ('00000000-0000-0000-0000-000000000004', 'Kaduna Admin', 'kaduna@ismph.org', 'state_admin', 'Kaduna', '+2348012345681');
 
 -- Insert sample diseases
-INSERT INTO diseases (name, state, zone, total_cases, active_cases, recovered, deaths) VALUES
-  ('Malaria', 'Lagos', 'Lagos Central', 150, 45, 100, 5),
-  ('Typhoid', 'Lagos', 'Lagos Central', 75, 20, 50, 5),
-  ('COVID-19', 'Lagos', 'Lagos Central', 200, 10, 185, 5),
-  ('Malaria', 'Kano', 'Kano Municipal', 300, 80, 210, 10),
-  ('Measles', 'Kano', 'Kano Municipal', 120, 30, 85, 5),
-  ('Malaria', 'Kaduna', 'Kaduna North', 180, 50, 125, 5),
-  ('Tuberculosis', 'Kaduna', 'Kaduna North', 90, 25, 60, 5),
-  ('Malaria', 'Abuja', 'Abuja Municipal', 95, 15, 75, 5),
-  ('Cholera', 'Abuja', 'Abuja Municipal', 45, 10, 30, 5),
-  ('Dengue', 'Abuja', 'Abuja Municipal', 25, 5, 18, 2);
+INSERT INTO diseases (disease_name, zone, state, new_cases, total_cases, mortality, recovered, severity) VALUES
+  ('Malaria', 'South', 'Lagos', 45, 150, 5, 100, 'medium'),
+  ('Typhoid', 'South', 'Lagos', 20, 75, 5, 50, 'low'),
+  ('COVID-19', 'South', 'Lagos', 10, 200, 5, 185, 'low'),
+  ('Malaria', 'North', 'Kano', 80, 300, 10, 210, 'high'),
+  ('Measles', 'North', 'Kano', 30, 120, 5, 85, 'medium'),
+  ('Malaria', 'North', 'Kaduna', 50, 180, 5, 125, 'medium'),
+  ('Tuberculosis', 'North', 'Kaduna', 25, 90, 5, 60, 'medium'),
+  ('Malaria', 'Federal', 'Abuja', 15, 95, 5, 75, 'low'),
+  ('Cholera', 'Federal', 'Abuja', 10, 45, 5, 30, 'medium'),
+  ('Dengue', 'Federal', 'Abuja', 5, 25, 2, 18, 'low');
 
 -- Insert sample PHC facilities
 INSERT INTO phc_facilities (name, state, lga, ward, address, latitude, longitude, phone, services, capacity) VALUES
@@ -390,9 +396,9 @@ INSERT INTO reports (user_id, title, category, description, state, status, prior
   ('00000000-0000-0000-0000-000000000002', 'Excellent Service at Garki Hospital', 'Service Quality', 'Commendable service delivery and staff professionalism.', 'Abuja', 'approved', 'low', 'Jane Smith', '+2348012345679');
 
 -- Insert sample feedback
-INSERT INTO feedback (user_id, facility_name, issue_type, description, status, priority, contact_info) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'Ikeja PHC', 'Equipment', 'Medical equipment not functioning properly', 'pending', 'high', '+2348012345678'),
-  ('00000000-0000-0000-0000-000000000002', 'Garki Hospital', 'Staff', 'Excellent service from medical staff', 'resolved', 'low', '+2348012345679');
+INSERT INTO feedback (user_id, facility_name, category, description, status, priority, state) VALUES
+  ('00000000-0000-0000-0000-000000000001', 'Ikeja PHC', 'Equipment Shortage', 'Medical equipment not functioning properly', 'pending', 'high', 'Lagos'),
+  ('00000000-0000-0000-0000-000000000002', 'Garki Hospital', 'Service Quality', 'Excellent service from medical staff', 'resolved', 'low', 'Abuja');
 
 -- ===========================================
 -- FUNCTIONS AND TRIGGERS

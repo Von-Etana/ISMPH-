@@ -20,11 +20,43 @@ import { FormInput } from '@/src/components/FormInput';
 import { Badge } from '@/src/components/Badge';
 import { SocialFooter } from '@/src/components/SocialFooter';
 import { COLORS, SPACING, TYPOGRAPHY, STATES } from '@/src/constants/theme';
-import { Plus, FileText, Clock, CheckCircle, XCircle, Camera, Image as ImageIcon, Trash2, BarChart3, TrendingUp, Users, MessageSquare, Activity, Calendar, MapPin, PieChart } from 'lucide-react-native';
+import { Plus, FileText, Clock, CheckCircle, XCircle, Camera, Image as ImageIcon, Trash2, BarChart3, TrendingUp, Users, MessageSquare, Activity, Calendar, MapPin, PieChart, type LucideIcon } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
 
 const { width } = Dimensions.get('window');
+
+interface DemoReport {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  state: string;
+  status: string;
+  priority: string;
+  createdAt: string;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  reporterName: string;
+}
+
+interface ChartData {
+  month?: string;
+  category?: string;
+  state?: string;
+  reports?: number;
+  count?: number;
+  percentage?: number;
+}
+
+interface PieData {
+  category?: string;
+  priority?: string;
+  status?: string;
+  count: number;
+  percentage: number;
+}
 
 const CATEGORIES = [
   'Service Quality',
@@ -106,7 +138,7 @@ export default function ReportsScreen() {
   const [showForm, setShowForm] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'all' | 'my' | 'pending'>('all');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  
+
   const [formData, setFormData] = useState({
     title: '',
     category: 'Service Quality',
@@ -121,7 +153,7 @@ export default function ReportsScreen() {
   const requestPermissions = async () => {
     const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
     const galleryStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (cameraStatus.status !== 'granted' || galleryStatus.status !== 'granted') {
       Alert.alert(
         'Permissions Required',
@@ -212,7 +244,7 @@ export default function ReportsScreen() {
     try {
       await dispatch(submitReport({
         ...formData,
-        user_id: profile?.id,
+        user_id: profile?.id || '',
       })).unwrap();
 
       Toast.show({
@@ -232,16 +264,17 @@ export default function ReportsScreen() {
         reporterPhone: '',
         reporterAddress: '',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Please try again';
       Toast.show({
         type: 'error',
         text1: 'Submission Failed',
-        text2: error || 'Please try again',
+        text2: errorMessage,
       });
     }
   };
 
-  const renderReport = (report: any) => (
+  const renderReport = (report: DemoReport) => (
     <Card key={report.id} style={styles.reportCard} variant="outlined">
       <View style={styles.reportHeader}>
         <View style={styles.reportHeaderLeft}>
@@ -261,7 +294,7 @@ export default function ReportsScreen() {
     </Card>
   );
 
-  const renderMetricCard = (title: string, value: number, IconComponent: any, color: string) => (
+  const renderMetricCard = (title: string, value: number, IconComponent: LucideIcon, color: string) => (
     <Card style={styles.metricCard} variant="elevated">
       <View style={styles.metricIcon}>
         <IconComponent size={24} color={color} />
@@ -271,12 +304,12 @@ export default function ReportsScreen() {
     </Card>
   );
 
-  const renderChartBar = (data: any, maxValue: number) => (
+  const renderChartBar = (data: ChartData, maxValue: number) => (
     <View key={data.month || data.category || data.state} style={styles.chartBar}>
       <View style={styles.barContainer}>
         <View
           style={[styles.barFill, {
-            width: `${(data.reports || data.count || data.percentage) / maxValue * 100}%`,
+            width: `${((data.reports || data.count || data.percentage || 0) / maxValue) * 100}%`,
             backgroundColor: COLORS.primary
           }]}
         />
@@ -286,7 +319,7 @@ export default function ReportsScreen() {
     </View>
   );
 
-  const renderPieSegment = (data: any, total: number) => (
+  const renderPieSegment = (data: PieData, total: number) => (
     <View key={data.category || data.priority || data.status} style={styles.pieSegment}>
       <View style={styles.segmentInfo}>
         <Text style={styles.segmentLabel}>{data.category || data.priority || data.status}</Text>
@@ -366,8 +399,8 @@ export default function ReportsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             {selectedTab === 'all' ? 'All Reports' :
-             selectedTab === 'my' ? 'My Reports' :
-             selectedTab === 'pending' ? 'Pending Reports' : 'Reports'}
+              selectedTab === 'my' ? 'My Reports' :
+                selectedTab === 'pending' ? 'Pending Reports' : 'Reports'}
           </Text>
           {DEMO_REPORTS
             .filter(report => {
@@ -396,7 +429,7 @@ export default function ReportsScreen() {
 
           <ScrollView style={styles.form}>
             <Text style={styles.sectionLabel}>Report Details</Text>
-            
+
             <FormInput
               label="Report Title"
               value={formData.title}

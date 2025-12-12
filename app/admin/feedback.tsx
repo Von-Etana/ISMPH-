@@ -25,6 +25,22 @@ import {
 } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 
+interface AdminFeedback {
+  id: string;
+  facility: string;
+  issue: string;
+  category: string;
+  tags: string[];
+  description: string;
+  status: string;
+  isRead: boolean;
+  actionTaken: string | null;
+  adminMessage: string | null;
+  submittedAt: string;
+  reporterName: string;
+  reporterEmail: string;
+}
+
 const ADMIN_FEEDBACK_DATA = [
   {
     id: '1',
@@ -74,7 +90,7 @@ const ADMIN_FEEDBACK_DATA = [
 ];
 
 export default function AdminFeedbackScreen() {
-  const [selectedFeedback, setSelectedFeedback] = useState<any>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<AdminFeedback | null>(null);
   const [showResponseModal, setShowResponseModal] = useState(false);
   const [responseText, setResponseText] = useState('');
   const [actionText, setActionText] = useState('');
@@ -143,7 +159,7 @@ export default function AdminFeedbackScreen() {
     }
   };
 
-  const renderFeedbackCard = (feedback: any) => (
+  const renderFeedbackCard = (feedback: AdminFeedback) => (
     <TouchableOpacity
       key={feedback.id}
       onPress={() => setSelectedFeedback(feedback)}
@@ -209,7 +225,7 @@ export default function AdminFeedbackScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity onPress={() => { }}>
           <Image
             source={require('@/assets/images/WhatsApp Image 2025-11-08 at 09.39.48_7cb724fe.png')}
             style={styles.logo}

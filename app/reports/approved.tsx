@@ -13,6 +13,24 @@ import { Badge } from '@/src/components/Badge';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
 import { ArrowLeft, CheckCircle, TrendingUp, Calendar, MapPin, Star } from 'lucide-react-native';
 
+interface ApprovedReport {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  state: string;
+  status: string;
+  priority: string;
+  createdAt: string;
+  resolvedAt: string;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  reporterName: string;
+  resolutionTime: string;
+  rating: number;
+}
+
 const APPROVED_REPORTS_DATA = [
   {
     id: '2',
@@ -72,7 +90,7 @@ const APPROVED_STATS = {
 };
 
 export default function ApprovedReportsScreen() {
-  const renderReport = (report: any) => (
+  const renderReport = (report: ApprovedReport) => (
     <Card key={report.id} style={styles.reportCard} variant="outlined">
       <View style={styles.reportHeader}>
         <View style={styles.reportHeaderLeft}>

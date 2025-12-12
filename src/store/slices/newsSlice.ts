@@ -22,8 +22,9 @@ export const fetchNewsFromAPI = createAsyncThunk(
     try {
       const articles = await newsAPIService.getHealthNews(query);
       return articles;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch news');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch news';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -34,8 +35,9 @@ export const fetchTopHeadlines = createAsyncThunk(
     try {
       const articles = await newsAPIService.getTopHealthHeadlines();
       return articles;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch headlines');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch headlines';
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -46,8 +48,9 @@ export const searchNews = createAsyncThunk(
     try {
       const articles = await newsAPIService.searchHealthNews(query, fromDate, toDate);
       return articles;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to search news');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to search news';
+      return rejectWithValue(errorMessage);
     }
   }
 );

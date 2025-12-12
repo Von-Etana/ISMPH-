@@ -49,11 +49,12 @@ export default function AuthScreen() {
         });
       }
       router.replace('/(tabs)');
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Please try again';
       Toast.show({
         type: 'error',
         text1: 'Authentication Error',
-        text2: err || 'Please try again',
+        text2: errorMessage,
       });
     }
   };
@@ -81,11 +82,12 @@ export default function AuthScreen() {
         text2: 'Check your email for password reset instructions',
       });
       setShowForgotPassword(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Please try again';
       Toast.show({
         type: 'error',
         text1: 'Reset Failed',
-        text2: error.message || 'Please try again',
+        text2: errorMessage,
       });
     }
   };

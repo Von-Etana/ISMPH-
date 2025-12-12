@@ -9,9 +9,10 @@ import {
   Dimensions,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { router } from 'expo-router';
+import { router, Href } from 'expo-router';
 import { RootState, AppDispatch } from '@/src/store';
 import { fetchDiseases } from '@/src/store/slices/diseasesSlice';
+import { Disease } from '@/src/types';
 import { fetchApprovedReports } from '@/src/store/slices/reportsSlice';
 import { Card } from '@/src/components/Card';
 import { Badge } from '@/src/components/Badge';
@@ -32,8 +33,8 @@ import {
 const { width } = Dimensions.get('window');
 
 export default function AdminDashboard() {
-   const dispatch = useDispatch<AppDispatch>();
-   const { profile } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  const { profile } = useSelector((state: RootState) => state.auth);
   const { diseases, loading: diseasesLoading } = useSelector((state: RootState) => state.diseases);
   const { reports } = useSelector((state: RootState) => state.reports);
 
@@ -54,9 +55,9 @@ export default function AdminDashboard() {
   };
 
   // Analytics calculations
-  const totalCases = diseases.reduce((sum: number, d: any) => sum + d.total_cases, 0);
-  const totalDeaths = diseases.reduce((sum: number, d: any) => sum + d.mortality, 0);
-  const totalRecovered = diseases.reduce((sum: number, d: any) => sum + d.recovered, 0);
+  const totalCases = diseases.reduce((sum: number, d: Disease) => sum + d.total_cases, 0);
+  const totalDeaths = diseases.reduce((sum: number, d: Disease) => sum + d.mortality, 0);
+  const totalRecovered = diseases.reduce((sum: number, d: Disease) => sum + d.recovered, 0);
   const activeCases = totalCases - totalRecovered - totalDeaths;
 
   // Mock admin stats
@@ -165,7 +166,7 @@ export default function AdminDashboard() {
             <TouchableOpacity
               key={item.id}
               style={styles.menuItem}
-              onPress={() => router.push(item.route)}
+              onPress={() => router.push(item.route as Href)}
             >
               <View style={styles.menuLeft}>
                 <View style={[styles.menuIcon, { backgroundColor: item.color + '20' }]}>

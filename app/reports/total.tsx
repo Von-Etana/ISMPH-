@@ -13,6 +13,21 @@ import { Badge } from '@/src/components/Badge';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
 import { ArrowLeft, FileText, TrendingUp, BarChart3, MapPin, Calendar } from 'lucide-react-native';
 
+interface TotalReport {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  state: string;
+  status: string;
+  priority: string;
+  createdAt: string;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  reporterName: string;
+}
+
 const TOTAL_REPORTS_DATA = [
   {
     id: '1',
@@ -77,7 +92,7 @@ const SUMMARY_STATS = {
 };
 
 export default function TotalReportsScreen() {
-  const renderReport = (report: any) => (
+  const renderReport = (report: TotalReport) => (
     <Card key={report.id} style={styles.reportCard} variant="outlined">
       <View style={styles.reportHeader}>
         <View style={styles.reportHeaderLeft}>

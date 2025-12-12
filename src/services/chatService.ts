@@ -1,10 +1,20 @@
 import { supabase } from './supabase';
-import { Message } from '../types';
+import { Message, UserRole } from '../types';
 import { logger } from './logger';
+import { RealtimeChannel } from '@supabase/supabase-js';
+
+interface MessageData {
+  id: string;
+  user_id: string;
+  zone: string;
+  message: string;
+  timestamp: string;
+  profiles?: Array<{ full_name?: string; role?: UserRole }> | null;
+}
 
 export class ChatService {
   private static instance: ChatService;
-  private realtimeSubscription: any = null;
+  private realtimeSubscription: RealtimeChannel | null = null;
 
   static getInstance(): ChatService {
     if (!ChatService.instance) {
@@ -36,7 +46,7 @@ export class ChatService {
         throw new Error('Failed to fetch messages');
       }
 
-      return data.map((msg: any) => ({
+      return data.map((msg: MessageData) => ({
         id: msg.id,
         user_id: msg.user_id,
         zone: msg.zone,

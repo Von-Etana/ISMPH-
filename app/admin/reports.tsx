@@ -15,6 +15,22 @@ import { COLORS, SPACING, TYPOGRAPHY, STATES } from '@/src/constants/theme';
 import { FileText, Clock, CheckCircle, XCircle, Eye, MessageSquare } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 
+interface AdminReport {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  state: string;
+  status: string;
+  priority: string;
+  createdAt: string;
+  reporterName: string;
+  reporterEmail: string;
+  reporterPhone: string;
+  reporterAddress: string;
+  mediaCount: number;
+}
+
 const ADMIN_REPORTS = [
   {
     id: '1',
@@ -64,7 +80,7 @@ const ADMIN_REPORTS = [
 ];
 
 export default function AdminReportsScreen() {
-  const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [selectedReport, setSelectedReport] = useState<AdminReport | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -122,7 +138,7 @@ export default function AdminReportsScreen() {
     }
   };
 
-  const renderReportCard = (report: any) => (
+  const renderReportCard = (report: AdminReport) => (
     <Card key={report.id} style={styles.reportCard} variant="elevated">
       <View style={styles.reportHeader}>
         <View style={styles.reportHeaderLeft}>
