@@ -26,6 +26,7 @@
     "production": {
       "ios": {
         "resourceClass": "m-medium",
+        "image": "macos-sonoma-14.4-xcode-15.4",
         "cache": {
           "disabled": true
         },
@@ -36,7 +37,10 @@
       },
       "android": {
         "resourceClass": "medium",
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "env": {
+          "EAS_SKIP_AUTO_FINGERPRINT": "1"
+        }
       }
     }
   },
