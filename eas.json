@@ -8,7 +8,8 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "resourceClass": "m-medium"
+        "resourceClass": "m-medium",
+        "image": "macos-sonoma-14.4-xcode-15.4"
       },
       "android": {
         "resourceClass": "medium"
@@ -17,7 +18,8 @@
     "preview": {
       "distribution": "internal",
       "ios": {
-        "resourceClass": "m-medium"
+        "resourceClass": "m-medium",
+        "image": "macos-sonoma-14.4-xcode-15.4"
       },
       "android": {
         "resourceClass": "medium"
@@ -51,7 +53,7 @@
         "ascAppId": "U72L469844"
       },
       "android": {
-        "track": "internal"
+        "track": "alpha"
       }
     }
   }
