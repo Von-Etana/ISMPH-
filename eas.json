@@ -22,7 +22,10 @@
         "image": "macos-sonoma-14.4-xcode-15.4"
       },
       "android": {
-        "resourceClass": "medium"
+        "resourceClass": "medium",
+        "env": {
+          "EAS_SKIP_AUTO_FINGERPRINT": "1"
+        }
       }
     },
     "production": {
