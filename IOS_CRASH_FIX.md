@@ -25,11 +25,11 @@ TurboModuleConvertUtils::convertNSExceptionToJSError
 
 ## Fixes Applied
 
-### 1. Disabled New Architecture (app.json)
+### 1. New Architecture Status (app.json)
 ```json
-"newArchEnabled": false
+"newArchEnabled": true
 ```
-**Reason**: React Native's New Architecture with Hermes can cause memory issues on certain iOS versions.
+**Note**: New Architecture must remain **enabled** because `react-native-reanimated ~4.1.1` requires it. The global error handlers below mitigate potential Hermes crashes.
 
 ### 2. Safe Supabase Initialization (src/services/supabase.ts)
 - Wrapped client creation in try-catch

@@ -12,7 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#00695C"
     },
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon.png",
