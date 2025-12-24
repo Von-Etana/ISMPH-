@@ -33,13 +33,13 @@
           "disabled": true
         },
         "env": {
-          "RCT_NEW_ARCH_ENABLED": "1",
           "EAS_SKIP_AUTO_FINGERPRINT": "1"
         }
       },
       "android": {
         "resourceClass": "medium",
         "buildType": "app-bundle",
+        "credentialsSource": "local",
         "env": {
           "EAS_SKIP_AUTO_FINGERPRINT": "1"
         }
