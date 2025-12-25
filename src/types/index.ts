@@ -1,4 +1,4 @@
-export type UserRole = 'public' | 'staff' | 'state_admin' | 'super_admin';
+export type UserRole = 'public' | 'pending_staff' | 'staff' | 'state_admin' | 'super_admin';
 export type LanguageCode = 'en' | 'ha' | 'yo' | 'ig';
 export type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected';
 export type ReportPriority = 'low' | 'medium' | 'high' | 'critical';

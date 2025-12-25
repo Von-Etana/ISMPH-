@@ -3,23 +3,32 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import { useSelector, useDispatch } from 'react-redux';
 import { router } from 'expo-router';
 import { RootState, AppDispatch } from '@/src/store';
+import { signOut } from '@/src/store/slices/authSlice';
 import { Card } from '@/src/components/Card';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
 import { ArrowLeft, User, Globe, HelpCircle, LogOut } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 
 export default function SettingsScreen() {
-   const dispatch = useDispatch<AppDispatch>();
-   const { profile } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  const { profile } = useSelector((state: RootState) => state.auth);
 
   const handleSignOut = async () => {
-    // Implement sign out logic here
-    Toast.show({
-      type: 'success',
-      text1: 'Signed Out',
-      text2: 'Successfully signed out',
-    });
-    router.replace('/auth');
+    try {
+      await dispatch(signOut()).unwrap();
+      Toast.show({
+        type: 'success',
+        text1: 'Signed Out',
+        text2: 'Successfully signed out',
+      });
+      router.replace('/auth');
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to sign out',
+      });
+    }
   };
 
   const settingsOptions = [
@@ -28,7 +37,7 @@ export default function SettingsScreen() {
       title: 'Profile Settings',
       subtitle: 'Update your personal information',
       icon: User,
-      action: () => router.push('/profile'),
+      action: () => router.push('/(tabs)/profile'),
     },
     {
       id: 'language',

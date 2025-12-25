@@ -99,295 +99,310 @@ export default function ChatScreen() {
       setIsLoading(false);
     }
   }, [chatService, handleError]);
-const openWhatsAppGroup = useCallback(async (zone: string) => {
-  try {
-    const groupLink = `whatsapp://send?phone=${zone === 'Lagos' ? '1234567890' : '0987654321'}`; // placeholder
-    const supported = await Linking.canOpenURL(groupLink);
-    if (supported) {
-      await Linking.openURL(groupLink);
-      Toast.show({
-        type: 'success',
-        text1: 'Opening WhatsApp',
-        text2: `${zone} zone group opened`,
-      });
-    } else {
+  const openWhatsAppGroup = useCallback(async (zone: string) => {
+    try {
+      // Use environment variables for WhatsApp group links
+      const groupLinks: Record<string, string> = {
+        'Lagos': process.env.EXPO_PUBLIC_WHATSAPP_LAGOS || 'https://chat.whatsapp.com/BKKJA9uWto6KSMbm6SOmnb',
+        'Kano': process.env.EXPO_PUBLIC_WHATSAPP_KANO || 'https://chat.whatsapp.com/HQQBeJnwIs0FUTCQq6h1tL',
+        'Kaduna': process.env.EXPO_PUBLIC_WHATSAPP_KADUNA || 'https://chat.whatsapp.com/GcHwV95X6UH5bvhfwigpxH',
+        'Abuja': process.env.EXPO_PUBLIC_WHATSAPP_ABUJA || '',
+      };
+
+      const groupLink = groupLinks[zone];
+
+      if (!groupLink) {
+        Toast.show({
+          type: 'info',
+          text1: 'Group Not Available',
+          text2: `WhatsApp group for ${zone} zone is not yet configured.`,
+        });
+        return;
+      }
+
+      const supported = await Linking.canOpenURL(groupLink);
+      if (supported) {
+        await Linking.openURL(groupLink);
+        Toast.show({
+          type: 'success',
+          text1: 'Opening WhatsApp',
+          text2: `${zone} zone group opened`,
+        });
+      } else {
+        // Try opening in browser as fallback
+        await Linking.openURL(groupLink);
+      }
+    } catch (error) {
       Toast.show({
         type: 'error',
-        text1: 'WhatsApp Not Available',
-        text2: 'Please make sure WhatsApp is installed on your device.',
+        text1: 'Connection Error',
+        text2: 'Failed to open WhatsApp group. Please try again.',
       });
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    Toast.show({
-      type: 'error',
-      text1: 'Connection Error',
-      text2: 'Failed to open WhatsApp group. Please try again.',
-    });
-  } finally {
-    setIsLoading(false);
+  }, []);
+
+  const sendMessage = async () => {
+    if (!messageText.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Message Required',
+        text2: 'Please enter a message to send',
+      });
+      return;
+    }
+
+    if (!selectedZone || !profile?.id) return;
+
+    // Validate message
+    const validation = await chatService.validateMessage(messageText);
+    if (!validation.isValid) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid Message',
+        text2: validation.error,
+      });
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      await chatService.sendMessage(selectedZone, messageText.trim(), profile.id);
+      // Don't add to local state - real-time subscription will handle it
+      setMessageText('');
+      Toast.show({
+        type: 'success',
+        text1: 'Message Sent',
+        text2: 'Your message has been sent to the zone',
+      });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to Send Message',
+        text2: 'Please try again later.',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const openChatForZone = useCallback((zone: string) => {
+    setSelectedZone(zone);
+    setShowChatModal(true);
+  }, []);
+
+  if (!isStaff) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Zone Chat</Text>
+        </View>
+        <View style={styles.restrictedContainer}>
+          <View style={styles.restrictedAvatar}>
+            <MessageCircle size={CHAT_CONSTANTS.AVATAR_SIZE * 0.6} color={COLORS.white} />
+          </View>
+          <Text style={styles.restrictedTitle}>Admin Approval Required</Text>
+          <Text style={styles.restrictedText}>
+            This feature is only available for staff members to communicate within their zone groups.
+          </Text>
+        </View>
+      </View>
+    );
   }
-}, []);
 
-const sendMessage = async () => {
-  if (!messageText.trim()) {
-    Toast.show({
-      type: 'error',
-      text1: 'Message Required',
-      text2: 'Please enter a message to send',
-    });
-    return;
-  }
-
-  if (!selectedZone || !profile?.id) return;
-
-  // Validate message
-  const validation = await chatService.validateMessage(messageText);
-  if (!validation.isValid) {
-    Toast.show({
-      type: 'error',
-      text1: 'Invalid Message',
-      text2: validation.error,
-    });
-    return;
-  }
-
-  setIsSending(true);
-  try {
-    await chatService.sendMessage(selectedZone, messageText.trim(), profile.id);
-    // Don't add to local state - real-time subscription will handle it
-    setMessageText('');
-    Toast.show({
-      type: 'success',
-      text1: 'Message Sent',
-      text2: 'Your message has been sent to the zone',
-    });
-  } catch (error) {
-    console.error('Error sending message:', error);
-    Toast.show({
-      type: 'error',
-      text1: 'Failed to Send Message',
-      text2: 'Please try again later.',
-    });
-  } finally {
-    setIsSending(false);
-  }
-};
-
-const openChatForZone = useCallback((zone: string) => {
-  setSelectedZone(zone);
-  setShowChatModal(true);
-}, []);
-
-if (!isStaff) {
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Zone Chat</Text>
-      </View>
-      <View style={styles.restrictedContainer}>
-        <View style={styles.restrictedAvatar}>
-          <MessageCircle size={CHAT_CONSTANTS.AVATAR_SIZE * 0.6} color={COLORS.white} />
-        </View>
-        <Text style={styles.restrictedTitle}>Admin Approval Required</Text>
-        <Text style={styles.restrictedText}>
-          This feature is only available for staff members to communicate within their zone groups.
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-return (
-  <ErrorBoundary onError={handleError}>
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Zone Communication</Text>
-        <Text style={styles.headerSubtitle}>Connect with your zone team via WhatsApp</Text>
-      </View>
-
-      <ScrollView style={styles.content}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Zone</Text>
-          <Card style={styles.zoneCard} variant="elevated" onPress={() => openChatForZone(userZone)}>
-            <View style={styles.zoneHeader}>
-              <View style={styles.zoneInfo}>
-                <MapPin size={24} color={COLORS.primary} />
-                <View style={styles.zoneText}>
-                  <Text style={styles.zoneName}>{userZone} Zone</Text>
-                  <Text style={styles.zoneDescription}>Your assigned zone group</Text>
-                </View>
-              </View>
-              <View style={styles.zoneStats}>
-                <Users size={20} color={COLORS.textSecondary} />
-                <Text style={styles.zoneMembers}>
-                  {chatHistory.length} messages
-                </Text>
-              </View>
-            </View>
-            <View style={styles.zoneActions}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => openChatForZone(userZone)}
-                disabled={isLoading}
-              >
-                <MessageCircle size={16} color={COLORS.primary} />
-                <Text style={styles.actionText}>Open Chat</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, isLoading && styles.actionButtonDisabled]}
-                onPress={() => openWhatsAppGroup(userZone)}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator size="small" color={COLORS.success} />
-                ) : (
-                  <Phone size={16} color={COLORS.success} />
-                )}
-                <Text style={[styles.actionText, styles.whatsappText]}>
-                  {isLoading ? 'Opening...' : 'Open WhatsApp'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </Card>
+    <ErrorBoundary onError={handleError}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Zone Communication</Text>
+          <Text style={styles.headerSubtitle}>Connect with your zone team via WhatsApp</Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>All Zones</Text>
-          <Text style={styles.sectionSubtitle}>View other zone activities (read-only)</Text>
-
-          {['Kano', 'Kaduna']
-            .filter(zone => zone !== userZone)
-            .map((zone) => (
-              <Card key={zone} style={styles.otherZoneCard} variant="outlined">
-                <View style={styles.zoneHeader}>
-                  <View style={styles.zoneInfo}>
-                    <MapPin size={20} color={COLORS.textSecondary} />
-                    <View style={styles.zoneText}>
-                      <Text style={styles.otherZoneName}>{zone} Zone</Text>
-                      <Text style={styles.otherZoneDescription}>Read-only access</Text>
-                    </View>
-                  </View>
-                  <View style={styles.zoneStats}>
-                    <Users size={18} color={COLORS.textSecondary} />
-                    <Text style={styles.otherZoneMembers}>
-                      {chatHistory.length} messages
-                    </Text>
+        <ScrollView style={styles.content}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Your Zone</Text>
+            <Card style={styles.zoneCard} variant="elevated" onPress={() => openChatForZone(userZone)}>
+              <View style={styles.zoneHeader}>
+                <View style={styles.zoneInfo}>
+                  <MapPin size={24} color={COLORS.primary} />
+                  <View style={styles.zoneText}>
+                    <Text style={styles.zoneName}>{userZone} Zone</Text>
+                    <Text style={styles.zoneDescription}>Your assigned zone group</Text>
                   </View>
                 </View>
+                <View style={styles.zoneStats}>
+                  <Users size={20} color={COLORS.textSecondary} />
+                  <Text style={styles.zoneMembers}>
+                    {chatHistory.length} messages
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.zoneActions}>
                 <TouchableOpacity
-                  style={styles.viewActivityButton}
-                  onPress={() => {
-                    setSelectedZone(zone);
-                    setShowChatModal(true);
-                  }}
+                  style={styles.actionButton}
+                  onPress={() => openChatForZone(userZone)}
+                  disabled={isLoading}
                 >
-                  <Text style={styles.viewActivityText}>View Activity</Text>
+                  <MessageCircle size={16} color={COLORS.primary} />
+                  <Text style={styles.actionText}>Open Chat</Text>
                 </TouchableOpacity>
-              </Card>
-            ))}
-        </View>
-      </ScrollView>
-
-      {/* Chat Modal */}
-      <Modal visible={showChatModal} animationType="slide" presentationStyle="pageSheet">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <View style={styles.chatHeader}>
-              <MapPin size={20} color={COLORS.primary} />
-              <Text style={styles.chatTitle}>{selectedZone} Zone Chat</Text>
-              {selectedZone === userZone && (
-                <Badge label="Your Zone" variant="custom" style={{ backgroundColor: COLORS.primary + '20' }} />
-              )}
-            </View>
-            <TouchableOpacity onPress={() => setShowChatModal(false)}>
-              <X size={24} color={COLORS.text} />
-            </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionButton, isLoading && styles.actionButtonDisabled]}
+                  onPress={() => openWhatsAppGroup(userZone)}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={COLORS.success} />
+                  ) : (
+                    <Phone size={16} color={COLORS.success} />
+                  )}
+                  <Text style={[styles.actionText, styles.whatsappText]}>
+                    {isLoading ? 'Opening...' : 'Open WhatsApp'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </Card>
           </View>
 
-          <ScrollView style={styles.chatContainer} contentContainerStyle={styles.chatContent}>
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={COLORS.primary} />
-                <Text style={styles.loadingText}>Loading messages...</Text>
-              </View>
-            ) : chatHistory.length === 0 ? (
-              <View style={styles.emptyContainer}>
-                <MessageCircle size={48} color={COLORS.textSecondary} />
-                <Text style={styles.emptyText}>No messages yet</Text>
-                <Text style={styles.emptySubtext}>Be the first to start the conversation!</Text>
-              </View>
-            ) : (
-              chatHistory.map((message) => {
-                const isOwn = message.user_id === profile?.id;
-                return (
-                  <View
-                    key={message.id}
-                    style={[
-                      styles.messageBubble,
-                      isOwn ? styles.ownMessage : styles.otherMessage,
-                    ]}
-                  >
-                    {!isOwn && (
-                      <Text style={styles.messageSender}>{message.sender_name}</Text>
-                    )}
-                    <Text style={[styles.messageText, isOwn && styles.ownMessageText]}>
-                      {message.message}
-                    </Text>
-                    <Text style={[styles.messageTime, isOwn && styles.ownMessageTime]}>
-                      {new Date(message.timestamp).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </Text>
-                  </View>
-                );
-              })
-            )}
-          </ScrollView>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>All Zones</Text>
+            <Text style={styles.sectionSubtitle}>View other zone activities (read-only)</Text>
 
-          {selectedZone === userZone && (
-            <View style={styles.messageInput}>
-              <TextInput
-                style={styles.input}
-                placeholder="Type your message..."
-                value={messageText}
-                onChangeText={setMessageText}
-                multiline
-                placeholderTextColor={COLORS.textSecondary}
-              />
-              <TouchableOpacity
-                style={[styles.sendButton, (!messageText.trim() || isSending) && styles.sendButtonDisabled]}
-                onPress={sendMessage}
-                disabled={!messageText.trim() || isSending}
-              >
-                {isSending ? (
-                  <ActivityIndicator size="small" color={COLORS.white} />
-                ) : (
-                  <Send size={20} color={messageText.trim() ? COLORS.white : COLORS.textSecondary} />
+            {['Kano', 'Kaduna']
+              .filter(zone => zone !== userZone)
+              .map((zone) => (
+                <Card key={zone} style={styles.otherZoneCard} variant="outlined">
+                  <View style={styles.zoneHeader}>
+                    <View style={styles.zoneInfo}>
+                      <MapPin size={20} color={COLORS.textSecondary} />
+                      <View style={styles.zoneText}>
+                        <Text style={styles.otherZoneName}>{zone} Zone</Text>
+                        <Text style={styles.otherZoneDescription}>Read-only access</Text>
+                      </View>
+                    </View>
+                    <View style={styles.zoneStats}>
+                      <Users size={18} color={COLORS.textSecondary} />
+                      <Text style={styles.otherZoneMembers}>
+                        {chatHistory.length} messages
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.viewActivityButton}
+                    onPress={() => {
+                      setSelectedZone(zone);
+                      setShowChatModal(true);
+                    }}
+                  >
+                    <Text style={styles.viewActivityText}>View Activity</Text>
+                  </TouchableOpacity>
+                </Card>
+              ))}
+          </View>
+        </ScrollView>
+
+        {/* Chat Modal */}
+        <Modal visible={showChatModal} animationType="slide" presentationStyle="pageSheet">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <View style={styles.chatHeader}>
+                <MapPin size={20} color={COLORS.primary} />
+                <Text style={styles.chatTitle}>{selectedZone} Zone Chat</Text>
+                {selectedZone === userZone && (
+                  <Badge label="Your Zone" variant="custom" style={{ backgroundColor: COLORS.primary + '20' }} />
                 )}
+              </View>
+              <TouchableOpacity onPress={() => setShowChatModal(false)}>
+                <X size={24} color={COLORS.text} />
               </TouchableOpacity>
             </View>
-          )}
 
-          {selectedZone !== userZone && (
-            <View style={styles.readOnlyNotice}>
-              <Text style={styles.readOnlyText}>
-                This is a read-only view. You can only chat in your assigned zone.
-              </Text>
-              <Button
-                title="Go to My Zone"
-                onPress={() => {
-                  setSelectedZone(userZone);
-                }}
-                style={{ marginTop: SPACING.sm }}
-              />
-            </View>
-          )}
-        </View>
-      </Modal>
-    </View>
-  </ErrorBoundary>
-);
+            <ScrollView style={styles.chatContainer} contentContainerStyle={styles.chatContent}>
+              {isLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={COLORS.primary} />
+                  <Text style={styles.loadingText}>Loading messages...</Text>
+                </View>
+              ) : chatHistory.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <MessageCircle size={48} color={COLORS.textSecondary} />
+                  <Text style={styles.emptyText}>No messages yet</Text>
+                  <Text style={styles.emptySubtext}>Be the first to start the conversation!</Text>
+                </View>
+              ) : (
+                chatHistory.map((message) => {
+                  const isOwn = message.user_id === profile?.id;
+                  return (
+                    <View
+                      key={message.id}
+                      style={[
+                        styles.messageBubble,
+                        isOwn ? styles.ownMessage : styles.otherMessage,
+                      ]}
+                    >
+                      {!isOwn && (
+                        <Text style={styles.messageSender}>{message.sender_name}</Text>
+                      )}
+                      <Text style={[styles.messageText, isOwn && styles.ownMessageText]}>
+                        {message.message}
+                      </Text>
+                      <Text style={[styles.messageTime, isOwn && styles.ownMessageTime]}>
+                        {new Date(message.timestamp).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </Text>
+                    </View>
+                  );
+                })
+              )}
+            </ScrollView>
+
+            {selectedZone === userZone && (
+              <View style={styles.messageInput}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Type your message..."
+                  value={messageText}
+                  onChangeText={setMessageText}
+                  multiline
+                  placeholderTextColor={COLORS.textSecondary}
+                />
+                <TouchableOpacity
+                  style={[styles.sendButton, (!messageText.trim() || isSending) && styles.sendButtonDisabled]}
+                  onPress={sendMessage}
+                  disabled={!messageText.trim() || isSending}
+                >
+                  {isSending ? (
+                    <ActivityIndicator size="small" color={COLORS.white} />
+                  ) : (
+                    <Send size={20} color={messageText.trim() ? COLORS.white : COLORS.textSecondary} />
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {selectedZone !== userZone && (
+              <View style={styles.readOnlyNotice}>
+                <Text style={styles.readOnlyText}>
+                  This is a read-only view. You can only chat in your assigned zone.
+                </Text>
+                <Button
+                  title="Go to My Zone"
+                  onPress={() => {
+                    setSelectedZone(userZone);
+                  }}
+                  style={{ marginTop: SPACING.sm }}
+                />
+              </View>
+            )}
+          </View>
+        </Modal>
+      </View>
+    </ErrorBoundary>
+  );
 }
 
 const styles = StyleSheet.create({

@@ -11,9 +11,9 @@ import {
 } from 'lucide-react-native';
 
 export const COLORS = {
-  primary: '#00695C', // Richer Teal/Green
-  primaryDark: '#004D40',
-  primaryLight: '#4DB6AC',
+  primary: '#113203', // Deep Green (user-specified)
+  primaryDark: '#0A1F02',
+  primaryLight: '#2D5A0F',
   secondary: '#C62828', // Deeper Red
   secondaryDark: '#8E0000',
   secondaryLight: '#EF5350',

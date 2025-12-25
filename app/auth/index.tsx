@@ -28,17 +28,24 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [accountType, setAccountType] = useState<'user' | 'staff'>('user');
   const [state, setState] = useState('Lagos');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleAuth = async () => {
     try {
       if (isSignUp) {
-        await dispatch(signUp({ email, password, fullName, role: 'public', state })).unwrap();
+        // Set role based on account type selection
+        const role = accountType === 'staff' ? 'pending_staff' : 'public';
+        // Only pass state for staff accounts
+        const userState = accountType === 'staff' ? state : '';
+        await dispatch(signUp({ email, password, fullName, role, state: userState })).unwrap();
         Toast.show({
           type: 'success',
           text1: 'Account Created',
-          text2: 'Welcome to ISMPH Media Tracker',
+          text2: accountType === 'staff'
+            ? 'Your staff account is pending admin approval'
+            : 'Welcome to ISMPH Media Tracker',
         });
       } else {
         await dispatch(signIn({ email, password })).unwrap();
@@ -144,23 +151,51 @@ export default function AuthScreen() {
                 required
               />
 
-
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>State</Text>
+                <Text style={styles.label}>Account Type</Text>
                 <View style={styles.roleButtons}>
-                  {STATES.map((s: string) => (
-                    <TouchableOpacity
-                      key={s}
-                      style={[styles.stateButton, state === s && styles.roleButtonActive]}
-                      onPress={() => setState(s)}
-                    >
-                      <Text style={[styles.roleText, state === s && styles.roleTextActive]}>
-                        {s}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                  <TouchableOpacity
+                    style={[styles.accountTypeButton, accountType === 'user' && styles.roleButtonActive]}
+                    onPress={() => setAccountType('user')}
+                  >
+                    <Text style={[styles.roleText, accountType === 'user' && styles.roleTextActive]}>
+                      User
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.accountTypeButton, accountType === 'staff' && styles.roleButtonActive]}
+                    onPress={() => setAccountType('staff')}
+                  >
+                    <Text style={[styles.roleText, accountType === 'staff' && styles.roleTextActive]}>
+                      Staff
+                    </Text>
+                  </TouchableOpacity>
                 </View>
+                <Text style={styles.accountTypeHint}>
+                  {accountType === 'staff'
+                    ? 'Staff accounts require admin approval before accessing staff features.'
+                    : 'Register as a regular user to access public features.'}
+                </Text>
               </View>
+
+              {accountType === 'staff' && (
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Location (State)</Text>
+                  <View style={styles.roleButtons}>
+                    {STATES.map((s: string) => (
+                      <TouchableOpacity
+                        key={s}
+                        style={[styles.stateButton, state === s && styles.roleButtonActive]}
+                        onPress={() => setState(s)}
+                      >
+                        <Text style={[styles.roleText, state === s && styles.roleTextActive]}>
+                          {s}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
             </>
           )}
 
@@ -284,6 +319,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.surface,
+  },
+  accountTypeButton: {
+    flex: 1,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+  },
+  accountTypeHint: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.sm,
+    fontStyle: 'italic',
   },
   roleButtonActive: {
     backgroundColor: COLORS.primary,

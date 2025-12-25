@@ -109,7 +109,13 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>Settings</Text>
 
           <Card style={styles.menuCard}>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => {
+              Toast.show({
+                type: 'info',
+                text1: 'Notifications',
+                text2: 'Notification settings will be available soon.',
+              });
+            }}>
               <View style={styles.menuLeft}>
                 <Bell size={24} color={COLORS.text} />
                 <Text style={styles.menuText}>Notifications</Text>
