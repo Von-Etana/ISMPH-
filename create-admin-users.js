@@ -3,9 +3,12 @@
 
 const { createClient } = require('@supabase/supabase-js');
 
-// Replace with your actual Supabase URL and service role key
-const supabaseUrl = 'https://cbulgzqmemcduybijfpq.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNidWxnenFtZW1jZHV5YmlqZnBxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTYzMTc1NiwiZXhwIjoyMDc3MjA3NzU2fQ.cIOGiLT_LHIGsLbAI53kH3GtJWI9ovxwhCOKxEConZs';
+// Your new Supabase project URL
+const supabaseUrl = 'https://dviqdzynwapmvoerlvwg.supabase.co';
+
+// IMPORTANT: Use the SERVICE ROLE KEY (not anon key) - get from Supabase Dashboard > Settings > API
+// The service role key bypasses Row Level Security and can create users
+const supabaseServiceKey = 'YOUR_SERVICE_ROLE_KEY_HERE'; // Get from Supabase Dashboard > Settings > API
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
