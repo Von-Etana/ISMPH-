@@ -14,7 +14,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const adminUsers = [
   {
-    email: 'ysabuwa@lsmph.org',
+    email: 'ysabuwa@Ismph.org',
     password: 'TempPass123!', // Change this to a secure password
     full_name: 'Sabuwa Yahaya',
     state: 'Kano',
@@ -22,7 +22,7 @@ const adminUsers = [
     role: 'state_admin'
   },
   {
-    email: 'mpeace@lsmph.org',
+    email: 'mpeace@Ismph.org',
     password: 'TempPass123!', // Change this to a secure password
     full_name: 'Peace Micheal',
     state: 'Lagos',
@@ -30,7 +30,7 @@ const adminUsers = [
     role: 'state_admin'
   },
   {
-    email: 'abako@lsmph.org',
+    email: 'abako@Ismph.org',
     password: 'TempPass123!', // Change this to a secure password
     full_name: 'Bako Abdul Usman',
     state: 'Kaduna',

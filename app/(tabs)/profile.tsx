@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, Platform } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { router } from 'expo-router';
 import { RootState, AppDispatch } from '@/src/store';
@@ -35,14 +35,16 @@ export default function ProfileScreen() {
   };
 
   const requestPermissions = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(
-        'Permission Required',
-        'Camera roll permissions are needed to select a profile picture.',
-        [{ text: 'OK' }]
-      );
-      return false;
+    if (Platform.OS !== 'android') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Required',
+          'Camera roll permissions are needed to select a profile picture.',
+          [{ text: 'OK' }]
+        );
+        return false;
+      }
     }
     return true;
   };

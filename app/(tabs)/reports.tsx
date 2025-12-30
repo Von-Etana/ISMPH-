@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { router } from 'expo-router';
@@ -150,23 +151,35 @@ export default function ReportsScreen() {
     reporterAddress: '',
   });
 
-  const requestPermissions = async () => {
-    const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
-    const galleryStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (cameraStatus.status !== 'granted' || galleryStatus.status !== 'granted') {
-      Alert.alert(
-        'Permissions Required',
-        'Camera and gallery access are needed to upload media.',
-        [{ text: 'OK' }]
-      );
-      return false;
+  const requestPermissions = async (type: 'camera' | 'gallery') => {
+    if (type === 'camera') {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Required',
+          'Camera access is needed to take photos.',
+          [{ text: 'OK' }]
+        );
+        return false;
+      }
+    } else {
+      if (Platform.OS !== 'android') {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert(
+            'Permission Required',
+            'Gallery access is needed to select photos.',
+            [{ text: 'OK' }]
+          );
+          return false;
+        }
+      }
     }
     return true;
   };
 
   const pickImageFromGallery = async () => {
-    const hasPermission = await requestPermissions();
+    const hasPermission = await requestPermissions('gallery');
     if (!hasPermission) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -183,7 +196,7 @@ export default function ReportsScreen() {
   };
 
   const takePhoto = async () => {
-    const hasPermission = await requestPermissions();
+    const hasPermission = await requestPermissions('camera');
     if (!hasPermission) return;
 
     const result = await ImagePicker.launchCameraAsync({
