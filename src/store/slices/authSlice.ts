@@ -11,6 +11,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   isAuthenticated: boolean;
+  initialized: boolean; // Track if session restoration has been attempted
 }
 
 const initialState: AuthState = {
@@ -20,6 +21,7 @@ const initialState: AuthState = {
   loading: false,
   error: null,
   isAuthenticated: false,
+  initialized: false,
 };
 
 interface SignInResponse {
@@ -36,6 +38,49 @@ interface SignUpParams {
   state: string;
 }
 
+// New: Restore session from Supabase storage
+export const restoreSession = createAsyncThunk<
+  SignInResponse | null,
+  void,
+  { rejectValue: string }
+>(
+  'auth/restoreSession',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (error) throw error;
+      if (!session || !session.user) {
+        // No active session
+        return null;
+      }
+
+      // Fetch profile for the authenticated user
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profileError || !profile) {
+        // Profile not found, sign out
+        await supabase.auth.signOut();
+        return null;
+      }
+
+      return {
+        session,
+        user: session.user,
+        profile: profile as Profile
+      };
+    } catch (error) {
+      console.error('Session restoration failed:', error);
+      // Don't reject, just return null to allow fresh login
+      return null;
+    }
+  }
+);
+
 export const signIn = createAsyncThunk<
   SignInResponse,
   { email: string; password: string },
@@ -44,8 +89,19 @@ export const signIn = createAsyncThunk<
   'auth/signIn',
   async ({ email, password }, { rejectWithValue }) => {
     try {
+      // Validate inputs
+      if (!email || !email.trim()) {
+        return rejectWithValue('Please enter your email address');
+      }
+      if (!password) {
+        return rejectWithValue('Please enter your password');
+      }
+      if (!email.includes('@')) {
+        return rejectWithValue('Please enter a valid email address');
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
 
@@ -81,8 +137,25 @@ export const signUp = createAsyncThunk<
   'auth/signUp',
   async ({ email, password, fullName, role, state }, { rejectWithValue }) => {
     try {
+      // Validate inputs
+      if (!email || !email.trim()) {
+        return rejectWithValue('Please enter your email address');
+      }
+      if (!email.includes('@')) {
+        return rejectWithValue('Please enter a valid email address');
+      }
+      if (!password) {
+        return rejectWithValue('Please enter a password');
+      }
+      if (password.length < 6) {
+        return rejectWithValue('Password must be at least 6 characters long');
+      }
+      if (!fullName || !fullName.trim()) {
+        return rejectWithValue('Please enter your full name');
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
 
@@ -91,10 +164,10 @@ export const signUp = createAsyncThunk<
 
       const { error: profileError } = await supabase.from('profiles').insert({
         id: authData.user.id,
-        email,
-        full_name: fullName,
+        email: email.trim().toLowerCase(),
+        full_name: fullName.trim(),
         role,
-        state,
+        state: state || null,
       });
 
       if (profileError) throw profileError;
@@ -144,9 +217,34 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setInitialized: (state) => {
+      state.initialized = true;
+    },
   },
   extraReducers: (builder) => {
     builder
+      // Session restoration
+      .addCase(restoreSession.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(restoreSession.fulfilled, (state, action) => {
+        state.loading = false;
+        state.initialized = true;
+        if (action.payload) {
+          state.user = action.payload.user;
+          state.profile = action.payload.profile;
+          state.session = action.payload.session;
+          state.isAuthenticated = true;
+        } else {
+          state.isAuthenticated = false;
+        }
+      })
+      .addCase(restoreSession.rejected, (state) => {
+        state.loading = false;
+        state.initialized = true;
+        state.isAuthenticated = false;
+      })
+      // Sign in
       .addCase(signIn.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -157,11 +255,13 @@ const authSlice = createSlice({
         state.profile = action.payload.profile;
         state.session = action.payload.session;
         state.isAuthenticated = true;
+        state.initialized = true;
       })
       .addCase(signIn.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Sign in failed';
       })
+      // Sign up
       .addCase(signUp.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -172,11 +272,13 @@ const authSlice = createSlice({
         state.profile = action.payload.profile;
         state.session = action.payload.session;
         state.isAuthenticated = true;
+        state.initialized = true;
       })
       .addCase(signUp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Sign up failed';
       })
+      // Sign out
       .addCase(signOut.fulfilled, (state) => {
         state.user = null;
         state.profile = null;
@@ -186,5 +288,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, clearError } = authSlice.actions;
+export const { setUser, clearError, setInitialized } = authSlice.actions;
 export default authSlice.reducer;

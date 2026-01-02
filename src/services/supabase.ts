@@ -5,41 +5,35 @@ import 'react-native-url-polyfill/auto';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// Log warning if credentials are missing - don't crash the app
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    '[Supabase] Missing credentials. Please ensure EXPO_PUBLIC_SUPABASE_URL and ' +
-    'EXPO_PUBLIC_SUPABASE_ANON_KEY are set in your environment or EAS secrets.'
+// Validate Supabase credentials
+const hasValidCredentials = supabaseUrl &&
+  supabaseAnonKey &&
+  supabaseUrl !== 'your_supabase_project_url_here' &&
+  supabaseAnonKey !== 'your_supabase_anon_key_here' &&
+  supabaseUrl.includes('supabase.co');
+
+if (!hasValidCredentials) {
+  console.error(
+    '[Supabase] Invalid or missing credentials!\n' +
+    'Please set the following in your .env file:\n' +
+    '  EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co\n' +
+    '  EXPO_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here\n\n' +
+    'Get your credentials from: Supabase Dashboard > Settings > API'
   );
 }
 
-// Create client with error handling to prevent startup crashes
-let supabaseInstance: SupabaseClient;
-
-try {
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
+// Create client - will fail gracefully with clear errors if credentials are invalid
+const supabaseInstance: SupabaseClient = createClient(
+  supabaseUrl || 'https://invalid.supabase.co',
+  supabaseAnonKey || 'invalid-key',
+  {
     auth: {
       storage: AsyncStorage,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
     },
-  });
-} catch (error) {
-  console.error('[Supabase] Failed to initialize client:', error);
-  // Create a minimal client that won't crash the app
-  supabaseInstance = createClient(
-    'https://placeholder.supabase.co',
-    'placeholder-key',
-    {
-      auth: {
-        storage: AsyncStorage,
-        autoRefreshToken: false,
-        persistSession: false,
-        detectSessionInUrl: false,
-      },
-    }
-  );
-}
+  }
+);
 
 export const supabase = supabaseInstance;

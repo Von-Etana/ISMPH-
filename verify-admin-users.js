@@ -1,4 +1,4 @@
-// Script to verify admin users in Supabase
+x// Script to verify admin users in Supabase
 // Run this with: node verify-admin-users.js
 // 
 // IMPORTANT: Before running, set these environment variables:
