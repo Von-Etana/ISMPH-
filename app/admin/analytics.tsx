@@ -8,88 +8,95 @@ import {
   Dimensions,
 } from 'react-native';
 import { Card } from '@/src/components/Card';
-import { Badge } from '@/src/components/Badge';
-import { COLORS, SPACING, TYPOGRAPHY, ZONES } from '@/src/constants/theme';
-import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  FileText,
-  MessageSquare,
-  Activity,
-  Calendar,
-  MapPin,
-  type LucideIcon,
-} from 'lucide-react-native';
+import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
+import { BarChart3, TrendingUp, Users, FileText, MessageSquare, Activity, Calendar, MapPin, PieChart, Clock, CheckCircle, type LucideIcon } from 'lucide-react-native';
 
-interface StateData {
-  state: string;
-  users: number;
-  reports: number;
-  feedback: number;
-  cases: number;
+interface ChartData {
+  month?: string;
+  category?: string;
+  state?: string;
+  disease?: string;
+  reports?: number;
+  count?: number;
+  percentage?: number;
+  cases?: number;
 }
 
-interface CategoryData {
-  category: string;
+interface PieData {
+  category?: string;
+  priority?: string;
+  status?: string;
+  range?: string;
   count: number;
-}
-
-interface ActivityItem {
-  type: string;
-  action: string;
-  details: string;
-  time: string;
+  percentage: number;
 }
 
 const { width } = Dimensions.get('window');
 
-// Mock analytics data
-const ANALYTICS_DATA = {
+// Reports Analytics Data
+const REPORTS_ANALYTICS = {
   overview: {
-    totalUsers: 1247,
-    totalReports: 89,
-    totalFeedback: 156,
-    activeCases: 234,
+    totalReports: 245,
+    pendingReports: 89,
+    approvedReports: 156,
+    resolvedReports: 134,
+    avgResolutionTime: '3.2 days',
   },
-  trends: {
-    userGrowth: [
-      { month: 'Aug', users: 980 },
-      { month: 'Sep', users: 1050 },
-      { month: 'Oct', users: 1247 },
-    ],
-    reportActivity: [
-      { month: 'Aug', reports: 45 },
-      { month: 'Sep', reports: 67 },
-      { month: 'Oct', reports: 89 },
-    ],
-  },
+  monthlyTrends: [
+    { month: 'Jul', reports: 18, resolved: 15 },
+    { month: 'Aug', reports: 32, resolved: 28 },
+    { month: 'Sep', reports: 45, resolved: 38 },
+    { month: 'Oct', reports: 67, resolved: 53 },
+    { month: 'Nov', reports: 83, resolved: 0 }, // Current month
+  ],
+  relevanceDistribution: [
+    { relevance: 'Critical', count: 45, percentage: 18.4, color: COLORS.error },
+    { relevance: 'High', count: 78, percentage: 31.8, color: COLORS.warning },
+    { relevance: 'Medium', count: 89, percentage: 36.3, color: COLORS.info },
+    { relevance: 'Low', count: 33, percentage: 13.5, color: COLORS.success },
+  ],
+  topDiseasesByCases: [
+    { disease: 'Malaria', cases: 45, percentage: 28.1 },
+    { disease: 'Typhoid', cases: 32, percentage: 20.0 },
+    { disease: 'Diarrhea', cases: 28, percentage: 17.5 },
+    { disease: 'Respiratory Infections', cases: 25, percentage: 15.6 },
+    { disease: 'Skin Infections', cases: 18, percentage: 11.3 },
+    { disease: 'Others', cases: 12, percentage: 7.5 },
+  ],
   byState: [
-    { state: 'Lagos', users: 423, reports: 34, feedback: 45, cases: 89 },
-    { state: 'Abuja', users: 312, reports: 28, feedback: 38, cases: 67 },
-    { state: 'Kano', users: 298, reports: 19, feedback: 41, cases: 45 },
-    { state: 'Kaduna', users: 214, reports: 8, feedback: 32, cases: 33 },
+    { state: 'Lagos', reports: 89, percentage: 36.3 },
+    { state: 'Abuja', reports: 67, percentage: 27.3 },
+    { state: 'Kano', reports: 45, percentage: 18.4 },
+    { state: 'Rivers', reports: 34, percentage: 13.9 },
+    { state: 'Others', reports: 10, percentage: 4.1 },
   ],
   byCategory: [
-    { category: 'Service Quality', count: 34 },
-    { category: 'Equipment Shortage', count: 28 },
-    { category: 'Infrastructure', count: 19 },
-    { category: 'Staff Behavior', count: 15 },
-    { category: 'Drug Availability', count: 12 },
-    { category: 'Emergency Response', count: 8 },
+    { category: 'Service Quality', count: 67, percentage: 27.3 },
+    { category: 'Equipment Shortage', count: 56, percentage: 22.9 },
+    { category: 'Drug Availability', count: 45, percentage: 18.4 },
+    { category: 'Staff Behavior', count: 34, percentage: 13.9 },
+    { category: 'Infrastructure', count: 28, percentage: 11.4 },
+    { category: 'Others', count: 15, percentage: 6.1 },
   ],
-  recentActivity: [
-    { type: 'user', action: 'New user registered', details: 'Staff account from Lagos', time: '2 hours ago' },
-    { type: 'report', action: 'Report submitted', details: 'Equipment shortage at Ikeja PHC', time: '4 hours ago' },
-    { type: 'feedback', action: 'Critical feedback', details: 'Long wait times at Victoria Island', time: '6 hours ago' },
-    { type: 'user', action: 'User deactivated', details: 'Account from Kano', time: '1 day ago' },
+  responseTimeAnalysis: [
+    { range: '< 24hrs', count: 89, percentage: 36.3 },
+    { range: '24-48hrs', count: 67, percentage: 27.3 },
+    { range: '2-7 days', count: 56, percentage: 22.9 },
+    { range: '> 7 days', count: 33, percentage: 13.5 },
+  ],
+  facilityPerformance: [
+    { facility: 'General Hospital Lagos', reports: 23, avgRating: 3.2 },
+    { facility: 'PHC Ikeja', reports: 18, avgRating: 4.1 },
+    { facility: 'Teaching Hospital Abuja', reports: 15, avgRating: 3.8 },
+    { facility: 'PHC Kano', reports: 12, avgRating: 2.9 },
+    { facility: 'General Hospital Port Harcourt', reports: 10, avgRating: 3.5 },
   ],
 };
 
-export default function AdminAnalyticsScreen() {
+export default function AnalyticsScreen() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
 
-  const renderMetricCard = (title: string, value: number, change: string, IconComponent: LucideIcon, color: string) => (
+  const renderMetricCard = (title: string, value: string | number, change: string, IconComponent: LucideIcon, color: string) => (
     <Card style={styles.metricCard} variant="elevated">
       <View style={styles.metricHeader}>
         <View style={[styles.metricIcon, { backgroundColor: color + '20' }]}>
@@ -100,75 +107,64 @@ export default function AdminAnalyticsScreen() {
           <Text style={styles.changeText}>{change}</Text>
         </View>
       </View>
-      <Text style={styles.metricValue}>{value.toLocaleString()}</Text>
+      <Text style={styles.metricValue}>{typeof value === 'number' ? value.toLocaleString() : value}</Text>
       <Text style={styles.metricTitle}>{title}</Text>
     </Card>
   );
 
-  const renderStateCard = (stateData: StateData) => (
-    <Card key={stateData.state} style={styles.stateCard} variant="outlined">
-      <View style={styles.stateHeader}>
-        <Text style={styles.stateName}>{stateData.state}</Text>
-        <MapPin size={16} color={COLORS.primary} />
+  // Horizontal bar item for lists
+  const renderHorizontalBar = (label: string, value: number, maxValue: number, color: string = COLORS.primary) => (
+    <View key={label} style={styles.horizontalBarItem}>
+      <View style={styles.horizontalBarHeader}>
+        <Text style={styles.horizontalBarLabel}>{label}</Text>
+        <Text style={styles.horizontalBarValue}>{value}</Text>
       </View>
-      <View style={styles.stateStats}>
-        <View style={styles.stateStat}>
-          <Users size={14} color={COLORS.info} />
-          <Text style={styles.stateStatValue}>{stateData.users}</Text>
-          <Text style={styles.stateStatLabel}>Users</Text>
-        </View>
-        <View style={styles.stateStat}>
-          <FileText size={14} color={COLORS.warning} />
-          <Text style={styles.stateStatValue}>{stateData.reports}</Text>
-          <Text style={styles.stateStatLabel}>Reports</Text>
-        </View>
-        <View style={styles.stateStat}>
-          <MessageSquare size={14} color={COLORS.error} />
-          <Text style={styles.stateStatValue}>{stateData.feedback}</Text>
-          <Text style={styles.stateStatLabel}>Feedback</Text>
-        </View>
-        <View style={styles.stateStat}>
-          <Activity size={14} color={COLORS.success} />
-          <Text style={styles.stateStatValue}>{stateData.cases}</Text>
-          <Text style={styles.stateStatLabel}>Cases</Text>
-        </View>
+      <View style={styles.horizontalBarTrack}>
+        <View
+          style={[styles.horizontalBarFill, {
+            width: `${(value / maxValue) * 100}%`,
+            backgroundColor: color
+          }]}
+        />
       </View>
-    </Card>
+    </View>
   );
 
-  const renderCategoryBar = (categoryData: CategoryData, maxCount: number) => {
-    const percentage = (categoryData.count / maxCount) * 100;
-    return (
-      <View key={categoryData.category} style={styles.categoryItem}>
-        <View style={styles.categoryInfo}>
-          <Text style={styles.categoryName}>{categoryData.category}</Text>
-          <Text style={styles.categoryCount}>{categoryData.count}</Text>
-        </View>
-        <View style={styles.categoryBar}>
-          <View
-            style={[styles.categoryFill, { width: `${percentage}%` }]}
-          />
-        </View>
+  // Vertical bar chart for grouped data
+  const renderVerticalBarChart = (data: Array<{ label: string, value: number }>, maxValue: number, color: string = COLORS.primary) => (
+    <View style={styles.verticalChartContainer}>
+      <View style={styles.verticalBarsRow}>
+        {data.map((item, index) => (
+          <View key={item.label} style={styles.verticalBarWrapper}>
+            <Text style={styles.verticalBarValue}>{item.value}</Text>
+            <View style={styles.verticalBarTrack}>
+              <View
+                style={[styles.verticalBarFill, {
+                  height: `${(item.value / maxValue) * 100}%`,
+                  backgroundColor: color
+                }]}
+              />
+            </View>
+            <Text style={styles.verticalBarLabel} numberOfLines={2}>{item.label}</Text>
+          </View>
+        ))}
       </View>
-    );
-  };
+    </View>
+  );
 
-  const renderActivityItem = (activity: ActivityItem) => (
-    <View key={`${activity.type}-${activity.time}`} style={styles.activityItem}>
-      <Badge
-        label={activity.type.toUpperCase()}
-        variant="custom"
-        style={{
-          backgroundColor:
-            activity.type === 'user' ? COLORS.info + '20' :
-              activity.type === 'report' ? COLORS.warning + '20' :
-                COLORS.error + '20'
-        }}
-      />
-      <View style={styles.activityContent}>
-        <Text style={styles.activityAction}>{activity.action}</Text>
-        <Text style={styles.activityDetails}>{activity.details}</Text>
-        <Text style={styles.activityTime}>{activity.time}</Text>
+  const renderPieSegment = (data: PieData, total: number) => (
+    <View key={data.category || data.priority || data.status} style={styles.pieSegment}>
+      <View style={styles.segmentInfo}>
+        <Text style={styles.segmentLabel}>{data.category || data.priority || data.status}</Text>
+        <Text style={styles.segmentValue}>{data.count} ({data.percentage}%)</Text>
+      </View>
+      <View style={styles.segmentBar}>
+        <View
+          style={[styles.segmentFill, {
+            width: `${data.percentage}%`,
+            backgroundColor: COLORS.primary
+          }]}
+        />
       </View>
     </View>
   );
@@ -176,8 +172,8 @@ export default function AdminAnalyticsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Analytics Dashboard</Text>
-        <Text style={styles.headerSubtitle}>Comprehensive system insights and trends</Text>
+        <Text style={styles.headerTitle}>Reports Analytics</Text>
+        <Text style={styles.headerSubtitle}>Comprehensive insights into facility reports and trends</Text>
       </View>
 
       {/* Period Selector */}
@@ -200,45 +196,26 @@ export default function AdminAnalyticsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Key Metrics</Text>
           <View style={styles.metricsGrid}>
-            {renderMetricCard('Total Users', ANALYTICS_DATA.overview.totalUsers, '+12%', Users, COLORS.info)}
-            {renderMetricCard('Total Reports', ANALYTICS_DATA.overview.totalReports, '+8%', FileText, COLORS.warning)}
-            {renderMetricCard('Total Feedback', ANALYTICS_DATA.overview.totalFeedback, '+15%', MessageSquare, COLORS.error)}
-            {renderMetricCard('Active Cases', ANALYTICS_DATA.overview.activeCases, '+5%', Activity, COLORS.success)}
-            {renderMetricCard('System Health', 98, '+2%', TrendingUp, COLORS.primary)}
+            {renderMetricCard('Total Reports', REPORTS_ANALYTICS.overview.totalReports, '+23%', FileText, COLORS.primary)}
+            {renderMetricCard('Pending Reports', REPORTS_ANALYTICS.overview.pendingReports, '+12%', Clock, COLORS.warning)}
+            {renderMetricCard('Approved Reports', REPORTS_ANALYTICS.overview.approvedReports, '+18%', CheckCircle, COLORS.success)}
+            {renderMetricCard('Avg Resolution Time', REPORTS_ANALYTICS.overview.avgResolutionTime, '-8%', Activity, COLORS.info)}
           </View>
         </View>
 
-        {/* Trends */}
+        {/* Monthly Trends */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Growth Trends</Text>
+          <Text style={styles.sectionTitle}>Monthly Report Trends</Text>
           <Card style={styles.trendsCard} variant="elevated">
             <View style={styles.trendChart}>
-              <Text style={styles.trendTitle}>User Registration</Text>
+              <Text style={styles.trendTitle}>Reports Submitted</Text>
               <View style={styles.trendBars}>
-                {ANALYTICS_DATA.trends.userGrowth.map((data, index) => (
+                {REPORTS_ANALYTICS.monthlyTrends.map((data, index) => (
                   <View key={data.month} style={styles.trendBar}>
                     <View
                       style={[styles.trendFill, {
-                        height: `${(data.users / 1300) * 100}%`,
-                        backgroundColor: COLORS.info
-                      }]}
-                    />
-                    <Text style={styles.trendLabel}>{data.month}</Text>
-                    <Text style={styles.trendValue}>{data.users}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.trendChart}>
-              <Text style={styles.trendTitle}>Report Submissions</Text>
-              <View style={styles.trendBars}>
-                {ANALYTICS_DATA.trends.reportActivity.map((data, index) => (
-                  <View key={data.month} style={styles.trendBar}>
-                    <View
-                      style={[styles.trendFill, {
-                        height: `${(data.reports / 100) * 100}%`,
-                        backgroundColor: COLORS.warning
+                        height: `${(data.reports / 90) * 100}%`,
+                        backgroundColor: COLORS.primary
                       }]}
                     />
                     <Text style={styles.trendLabel}>{data.month}</Text>
@@ -247,30 +224,145 @@ export default function AdminAnalyticsScreen() {
                 ))}
               </View>
             </View>
+
+            <View style={styles.trendChart}>
+              <Text style={styles.trendTitle}>Reports Resolved</Text>
+              <View style={styles.trendBars}>
+                {REPORTS_ANALYTICS.monthlyTrends.map((data, index) => (
+                  <View key={data.month} style={styles.trendBar}>
+                    <View
+                      style={[styles.trendFill, {
+                        height: `${(data.resolved / 60) * 100}%`,
+                        backgroundColor: COLORS.success
+                      }]}
+                    />
+                    <Text style={styles.trendLabel}>{data.month}</Text>
+                    <Text style={styles.trendValue}>{data.resolved}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
           </Card>
         </View>
 
-        {/* State-wise Breakdown */}
+        {/* Relevance Distribution */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>State-wise Breakdown</Text>
-          {ANALYTICS_DATA.byState.map(renderStateCard)}
+          <Text style={styles.sectionTitle}>Report Relevance Distribution</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            {REPORTS_ANALYTICS.relevanceDistribution.map(data => (
+              <View key={data.relevance} style={styles.relevanceItem}>
+                <View style={styles.relevanceHeader}>
+                  <Text style={styles.relevanceLabel}>{data.relevance}</Text>
+                  <Text style={styles.relevanceValue}>{data.count} ({data.percentage}%)</Text>
+                </View>
+                <View style={styles.relevanceBar}>
+                  <View
+                    style={[styles.relevanceFill, {
+                      width: `${data.percentage}%`,
+                      backgroundColor: data.color
+                    }]}
+                  />
+                </View>
+              </View>
+            ))}
+          </Card>
         </View>
 
-        {/* Category Distribution */}
+        {/* Top Diseases by Cases - Bar Chart */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Report Categories</Text>
-          <Card style={styles.categoriesCard} variant="outlined">
-            {ANALYTICS_DATA.byCategory.map(category =>
-              renderCategoryBar(category, Math.max(...ANALYTICS_DATA.byCategory.map(c => c.count)))
+          <Text style={styles.sectionTitle}>Top Diseases by Reported Cases</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            {renderVerticalBarChart(
+              REPORTS_ANALYTICS.topDiseasesByCases.map(d => ({ label: d.disease, value: d.cases })),
+              Math.max(...REPORTS_ANALYTICS.topDiseasesByCases.map(d => d.cases)),
+              COLORS.error
             )}
           </Card>
         </View>
 
-        {/* Recent Activity */}
+        {/* State-wise Breakdown - Bar Chart */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <Card style={styles.activityCard} variant="outlined">
-            {ANALYTICS_DATA.recentActivity.map(renderActivityItem)}
+          <Text style={styles.sectionTitle}>Reports by State</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            {renderVerticalBarChart(
+              REPORTS_ANALYTICS.byState.map(d => ({ label: d.state, value: d.reports })),
+              Math.max(...REPORTS_ANALYTICS.byState.map(d => d.reports)),
+              COLORS.info
+            )}
+          </Card>
+        </View>
+
+        {/* Category Distribution - Bar Chart */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Report Categories</Text>
+          <Card style={styles.categoriesCard} variant="outlined">
+            {renderVerticalBarChart(
+              REPORTS_ANALYTICS.byCategory.map(c => ({ label: c.category, value: c.count })),
+              Math.max(...REPORTS_ANALYTICS.byCategory.map(c => c.count)),
+              COLORS.warning
+            )}
+          </Card>
+        </View>
+
+        {/* Response Time Analysis */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Response Time Analysis</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            {REPORTS_ANALYTICS.responseTimeAnalysis.map(data =>
+              renderPieSegment(data, REPORTS_ANALYTICS.overview.totalReports)
+            )}
+          </Card>
+        </View>
+
+        {/* Facility Performance */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Top Performing Facilities</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            {REPORTS_ANALYTICS.facilityPerformance.map(data => (
+              <View key={data.facility} style={styles.facilityItem}>
+                <View style={styles.facilityInfo}>
+                  <Text style={styles.facilityName}>{data.facility}</Text>
+                  <Text style={styles.facilityStats}>{data.reports} reports • {data.avgRating}★ avg</Text>
+                </View>
+                <View style={styles.facilityBar}>
+                  <View
+                    style={[styles.facilityFill, {
+                      width: `${(data.avgRating / 5) * 100}%`,
+                      backgroundColor: data.avgRating >= 4 ? COLORS.success : data.avgRating >= 3 ? COLORS.warning : COLORS.error
+                    }]}
+                  />
+                </View>
+              </View>
+            ))}
+          </Card>
+        </View>
+
+        {/* User Engagement */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>User Engagement Trends</Text>
+          <Card style={styles.chartCard} variant="outlined">
+            <View style={styles.engagementGrid}>
+              <View style={styles.engagementItem}>
+                <Text style={styles.engagementValue}>89%</Text>
+                <Text style={styles.engagementLabel}>App Usage</Text>
+                <Text style={styles.engagementChange}>Daily active users</Text>
+              </View>
+              <View style={styles.engagementItem}>
+                <Text style={styles.engagementValue}>4.2</Text>
+                <Text style={styles.engagementLabel}>Avg Rating</Text>
+                <Text style={styles.engagementChange}>User satisfaction</Text>
+              </View>
+              <View style={styles.engagementItem}>
+                <Text style={styles.engagementValue}>156</Text>
+                <Text style={styles.engagementLabel}>Feedback</Text>
+                <Text style={styles.engagementChange}>Positive responses</Text>
+              </View>
+              <View style={styles.engagementItem}>
+                <Text style={styles.engagementValue}>3.2</Text>
+                <Text style={styles.engagementLabel}>Avg Response</Text>
+                <Text style={styles.engagementChange}>Resolution time</Text>
+              </View>
+            </View>
           </Card>
         </View>
       </ScrollView>
@@ -314,16 +406,27 @@ const styles = StyleSheet.create({
   trendLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
   trendValue: { ...TYPOGRAPHY.caption, color: COLORS.text, fontWeight: '600', marginTop: SPACING.xs },
 
-  // States
-  stateCard: { marginBottom: SPACING.md },
-  stateHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.md },
-  stateName: { ...TYPOGRAPHY.h4, color: COLORS.text },
-  stateStats: { flexDirection: 'row', justifyContent: 'space-between' },
-  stateStat: { alignItems: 'center' },
-  stateStatValue: { ...TYPOGRAPHY.body1, fontWeight: '600', marginTop: SPACING.xs },
-  stateStatLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginTop: SPACING.xs },
+  // Charts
+  chartCard: { padding: SPACING.md },
+  chartTitle: { ...TYPOGRAPHY.body1, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.md },
 
-  // Categories
+  // Horizontal bar styles
+  horizontalBarItem: { marginBottom: SPACING.md },
+  horizontalBarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.xs },
+  horizontalBarLabel: { ...TYPOGRAPHY.body2, color: COLORS.text, flex: 1 },
+  horizontalBarValue: { ...TYPOGRAPHY.body2, fontWeight: '600', color: COLORS.primary },
+  horizontalBarTrack: { height: 12, backgroundColor: COLORS.border, borderRadius: 6, overflow: 'hidden' },
+  horizontalBarFill: { height: '100%', borderRadius: 6 },
+
+  // Vertical bar chart styles
+  verticalChartContainer: { paddingVertical: SPACING.md },
+  verticalBarsRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: 160, paddingHorizontal: SPACING.xs },
+  verticalBarWrapper: { alignItems: 'center', flex: 1, maxWidth: 60 },
+  verticalBarValue: { ...TYPOGRAPHY.caption, color: COLORS.text, fontWeight: '600', marginBottom: SPACING.xs },
+  verticalBarTrack: { width: 32, height: 120, backgroundColor: COLORS.border, borderRadius: 6, overflow: 'hidden', justifyContent: 'flex-end' },
+  verticalBarFill: { width: '100%', borderRadius: 6 },
+  verticalBarLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginTop: SPACING.xs, textAlign: 'center', fontSize: 10 },
+
   categoriesCard: { padding: SPACING.md },
   categoryItem: { marginBottom: SPACING.md },
   categoryInfo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm },
@@ -332,11 +435,33 @@ const styles = StyleSheet.create({
   categoryBar: { height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
   categoryFill: { height: '100%', backgroundColor: COLORS.primary, borderRadius: 4 },
 
-  // Activity
-  activityCard: { padding: SPACING.md },
-  activityItem: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: SPACING.md },
-  activityContent: { flex: 1, marginLeft: SPACING.sm },
-  activityAction: { ...TYPOGRAPHY.body2, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.xs },
-  activityDetails: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginBottom: SPACING.xs },
-  activityTime: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  pieSegment: { marginBottom: SPACING.md },
+  segmentInfo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm },
+  segmentLabel: { ...TYPOGRAPHY.body2, color: COLORS.text },
+  segmentValue: { ...TYPOGRAPHY.body2, fontWeight: '600', color: COLORS.primary },
+  segmentBar: { height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
+  segmentFill: { height: '100%', borderRadius: 4 },
+
+  // Relevance Distribution
+  relevanceItem: { marginBottom: SPACING.md },
+  relevanceHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm },
+  relevanceLabel: { ...TYPOGRAPHY.body2, color: COLORS.text, fontWeight: '600' },
+  relevanceValue: { ...TYPOGRAPHY.body2, color: COLORS.primary, fontWeight: '600' },
+  relevanceBar: { height: 12, backgroundColor: COLORS.border, borderRadius: 6, overflow: 'hidden' },
+  relevanceFill: { height: '100%', borderRadius: 6 },
+
+  // Facility Performance
+  facilityItem: { marginBottom: SPACING.md },
+  facilityInfo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.sm },
+  facilityName: { ...TYPOGRAPHY.body2, color: COLORS.text, fontWeight: '600', flex: 1 },
+  facilityStats: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  facilityBar: { height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
+  facilityFill: { height: '100%', borderRadius: 4 },
+
+  // User Engagement
+  engagementGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  engagementItem: { flex: 1, minWidth: '45%', alignItems: 'center', padding: SPACING.md, margin: SPACING.xs, backgroundColor: COLORS.surface, borderRadius: 8 },
+  engagementValue: { ...TYPOGRAPHY.h2, color: COLORS.primary, fontWeight: '700' },
+  engagementLabel: { ...TYPOGRAPHY.body2, color: COLORS.text, marginTop: SPACING.xs },
+  engagementChange: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginTop: SPACING.xs },
 });
