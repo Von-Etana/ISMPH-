@@ -51,8 +51,8 @@ export default function ChatScreen() {
   const [realtimeUnsubscribe, setRealtimeUnsubscribe] = useState<(() => void) | null>(null);
   const chatService = ChatService.getInstance();
 
-  // Only staff users can access this feature
-  const isStaff = profile?.role === 'staff';
+  // Staff and admin users can access this feature
+  const isStaff = profile?.role === 'staff' || profile?.role === 'state_admin' || profile?.role === 'super_admin';
   const userZone = profile?.state || 'Lagos';
 
   const handleError = useCallback((error: Error) => {
