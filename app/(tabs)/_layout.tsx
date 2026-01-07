@@ -3,8 +3,9 @@ import { Tabs, router } from 'expo-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/src/store';
 import { signOut } from '@/src/store/slices/authSlice';
-import { View, TouchableOpacity, Text, Modal, StyleSheet, Alert } from 'react-native';
-import { Home, Newspaper, FileText, MessageSquare, User, MessageCircle, Menu, Settings, LogOut, Bell, Globe, BarChart3 } from 'lucide-react-native';
+import { View, TouchableOpacity, Text, Modal, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Home, Newspaper, FileText, MessageSquare, User, MessageCircle, Menu, Settings, LogOut, Bell, Globe, BarChart3, Shield } from 'lucide-react-native';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
 import Toast from 'react-native-toast-message';
 
@@ -12,6 +13,7 @@ export default function TabLayout() {
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, profile } = useSelector((state: RootState) => state.auth);
   const [showMenu, setShowMenu] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -68,6 +70,9 @@ export default function TabLayout() {
     return null;
   }
 
+  // Calculate proper bottom padding for tab bar
+  const tabBarBottomPadding = Math.max(insets.bottom, 8);
+
   return (
     <View style={styles.container}>
       {/* Global Header */}
@@ -86,8 +91,8 @@ export default function TabLayout() {
           tabBarActiveTintColor: COLORS.primary,
           tabBarInactiveTintColor: COLORS.textSecondary,
           tabBarStyle: {
-            height: 60,
-            paddingBottom: 8,
+            height: 60 + tabBarBottomPadding,
+            paddingBottom: tabBarBottomPadding,
             paddingTop: 8,
           },
         }}
@@ -132,6 +137,21 @@ export default function TabLayout() {
           options={{
             title: 'Analytics',
             tabBarIcon: ({ size, color }) => <BarChart3 size={size} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="admin"
+          options={{
+            title: 'Admin',
+            tabBarIcon: ({ size, color }) => <Shield size={size} color={color} />,
+            // Only show for admin users
+            href: (profile?.role === 'state_admin' || profile?.role === 'super_admin') ? '/(tabs)/admin' : null,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            href: null, // Hide from tab bar
           }}
         />
       </Tabs>
