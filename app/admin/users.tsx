@@ -191,4 +191,3 @@ const styles = StyleSheet.create({
   roleButtonActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   roleButtonText: { ...TYPOGRAPHY.body2, color: COLORS.text },
   roleButtonTextActive: { color: COLORS.white, fontWeight: '600' },
-});
