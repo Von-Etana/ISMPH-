@@ -7,6 +7,13 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://dviqdzynwapmvoerlvwg.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2aXFkenlud2FwbXZvZXJsdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2NTUzODMsImV4cCI6MjA4MjIzMTM4M30.2E1wHNukeeAcq7mJcPzfz56tjMQgsKI2DsfvCBvYpOE",
+        "EXPO_PUBLIC_WHATSAPP_LAGOS": "https://chat.whatsapp.com/BKKJA9uWto6KSMbm6SOmnb",
+        "EXPO_PUBLIC_WHATSAPP_KANO": "https://chat.whatsapp.com/HQQBeJnwIs0FUTCQq6h1tL",
+        "EXPO_PUBLIC_WHATSAPP_KADUNA": "https://chat.whatsapp.com/GcHwV95X6UH5bvhfwigpxH"
+      },
       "ios": {
         "resourceClass": "m-medium",
         "image": "macos-sonoma-14.4-xcode-15.4",
@@ -20,6 +27,13 @@
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://dviqdzynwapmvoerlvwg.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2aXFkenlud2FwbXZvZXJsdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2NTUzODMsImV4cCI6MjA4MjIzMTM4M30.2E1wHNukeeAcq7mJcPzfz56tjMQgsKI2DsfvCBvYpOE",
+        "EXPO_PUBLIC_WHATSAPP_LAGOS": "https://chat.whatsapp.com/BKKJA9uWto6KSMbm6SOmnb",
+        "EXPO_PUBLIC_WHATSAPP_KANO": "https://chat.whatsapp.com/HQQBeJnwIs0FUTCQq6h1tL",
+        "EXPO_PUBLIC_WHATSAPP_KADUNA": "https://chat.whatsapp.com/GcHwV95X6UH5bvhfwigpxH"
+      },
       "ios": {
         "resourceClass": "m-medium",
         "image": "macos-sonoma-14.4-xcode-15.4",
@@ -36,7 +50,12 @@
     },
     "production": {
       "env": {
-        "EAS_SKIP_AUTO_FINGERPRINT": "1"
+        "EAS_SKIP_AUTO_FINGERPRINT": "1",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://dviqdzynwapmvoerlvwg.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2aXFkenlud2FwbXZvZXJsdndnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY2NTUzODMsImV4cCI6MjA4MjIzMTM4M30.2E1wHNukeeAcq7mJcPzfz56tjMQgsKI2DsfvCBvYpOE",
+        "EXPO_PUBLIC_WHATSAPP_LAGOS": "https://chat.whatsapp.com/BKKJA9uWto6KSMbm6SOmnb",
+        "EXPO_PUBLIC_WHATSAPP_KANO": "https://chat.whatsapp.com/HQQBeJnwIs0FUTCQq6h1tL",
+        "EXPO_PUBLIC_WHATSAPP_KADUNA": "https://chat.whatsapp.com/GcHwV95X6UH5bvhfwigpxH"
       },
       "ios": {
         "resourceClass": "m-medium",
