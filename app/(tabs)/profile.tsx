@@ -18,19 +18,29 @@ export default function ProfileScreen() {
 
   const handleSignOut = async () => {
     try {
+      console.log('[Profile] Starting sign out...');
       await dispatch(signOut()).unwrap();
+      console.log('[Profile] Sign out successful, navigating to auth...');
       Toast.show({
         type: 'success',
         text1: 'Signed Out',
         text2: 'Successfully signed out',
       });
-      router.replace('/auth');
+      // Use setTimeout to ensure state is cleared before navigation
+      setTimeout(() => {
+        router.replace('/auth');
+      }, 100);
     } catch (error) {
+      console.error('[Profile] Sign out error:', error);
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Failed to sign out',
+        text2: typeof error === 'string' ? error : 'Failed to sign out',
       });
+      // Even if there's an error, try to navigate to auth
+      setTimeout(() => {
+        router.replace('/auth');
+      }, 100);
     }
   };
 
