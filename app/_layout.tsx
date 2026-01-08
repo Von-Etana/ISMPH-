@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Provider, useDispatch, useSelector } from 'react-redux';
@@ -36,6 +36,16 @@ function AuthListener({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const segments = useSegments();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  // Wait for component to mount before allowing navigation
+  useEffect(() => {
+    // Small delay to ensure Root Layout is fully mounted
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     // Listen for auth state changes
@@ -47,10 +57,10 @@ function AuthListener({ children }: { children: React.ReactNode }) {
           // Clear user from Redux
           dispatch(setUser(null));
 
-          // Navigate to auth screen if not already there
+          // Navigate to auth screen if not already there (only if mounted)
           const inAuthGroup = segments[0] === 'auth';
-          if (!inAuthGroup) {
-            router.replace('/auth');
+          if (!inAuthGroup && isMounted) {
+            setTimeout(() => router.replace('/auth'), 100);
           }
         } else if (event === 'SIGNED_IN' && session) {
           // Fetch and update profile
@@ -76,17 +86,19 @@ function AuthListener({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [dispatch, router, segments]);
+  }, [dispatch, router, segments, isMounted]);
 
-  // Handle navigation protection
+  // Handle navigation protection - only after mounted
   useEffect(() => {
+    if (!isMounted) return;
+
     const inAuthGroup = segments[0] === 'auth';
 
     if (!isAuthenticated && !inAuthGroup) {
       // Redirect to auth if not authenticated
-      router.replace('/auth');
+      setTimeout(() => router.replace('/auth'), 100);
     }
-  }, [isAuthenticated, segments, router]);
+  }, [isAuthenticated, segments, router, isMounted]);
 
   return <>{children}</>;
 }
