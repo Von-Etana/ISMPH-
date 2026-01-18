@@ -11,15 +11,25 @@ import Toast from 'react-native-toast-message';
 
 export default function TabLayout() {
   const dispatch = useDispatch<AppDispatch>();
-  const { isAuthenticated, profile } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, profile, loading } = useSelector((state: RootState) => state.auth);
   const [showMenu, setShowMenu] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const insets = useSafeAreaInsets();
 
+  // Determine if user is admin - must be explicit to avoid flicker on iOS
+  const isAdmin = profile?.role === 'state_admin' || profile?.role === 'super_admin';
+
+  // Wait for mount before allowing navigation
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace('/auth');
+    const timer = setTimeout(() => setIsMounted(true), 200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated && isMounted) {
+      setTimeout(() => router.replace('/auth'), 100);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isMounted]);
 
   const handleSignOut = async () => {
     try {
@@ -66,7 +76,8 @@ export default function TabLayout() {
     setShowMenu(false);
   };
 
-  if (!isAuthenticated) {
+  // Don't render tabs until auth state is fully loaded (prevents Admin tab flash on iOS)
+  if (!isAuthenticated || loading) {
     return null;
   }
 
@@ -144,8 +155,9 @@ export default function TabLayout() {
           options={{
             title: 'Admin',
             tabBarIcon: ({ size, color }) => <Shield size={size} color={color} />,
-            // Only show for admin users
-            href: (profile?.role === 'state_admin' || profile?.role === 'super_admin') ? '/(tabs)/admin' : null,
+            // Only show for admin users - use both href and tabBarItemStyle for iOS compatibility
+            href: isAdmin ? '/(tabs)/admin' : null,
+            tabBarItemStyle: isAdmin ? undefined : { display: 'none' },
           }}
         />
         <Tabs.Screen
