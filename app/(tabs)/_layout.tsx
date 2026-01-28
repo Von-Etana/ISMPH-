@@ -145,7 +145,7 @@ export default function TabLayout() {
             title: 'Admin',
             tabBarIcon: ({ size, color }) => <Shield size={size} color={color} />,
             // Only show for admin users
-            href: (Platform.OS === 'ios' || !(profile?.role === 'state_admin' || profile?.role === 'super_admin')) ? null : '/(tabs)/admin',
+            href: (profile?.role === 'state_admin' || profile?.role === 'super_admin') ? '/(tabs)/admin' : null,
           }}
         />
         <Tabs.Screen
