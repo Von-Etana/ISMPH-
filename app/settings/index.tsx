@@ -57,13 +57,7 @@ export default function SettingsScreen() {
       title: 'Help & Support',
       subtitle: 'Get help and contact support',
       icon: HelpCircle,
-      action: () => {
-        Toast.show({
-          type: 'info',
-          text1: 'Coming Soon',
-          text2: 'Help & Support will be available soon',
-        });
-      },
+      action: () => router.push('/settings/contact'),
     },
   ];
 
