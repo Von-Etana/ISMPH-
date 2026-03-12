@@ -71,7 +71,7 @@
       "android": {
         "resourceClass": "medium",
         "buildType": "app-bundle",
-        "credentialsSource": "local",
+        "credentialsSource": "remote",
         "env": {
           "EAS_SKIP_AUTO_FINGERPRINT": "1"
         }
