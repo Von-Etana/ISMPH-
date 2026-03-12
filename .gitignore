@@ -34,3 +34,9 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# sensitive credentials
+@von-etana__ismph-media-tracker-keystore-credentials.md
+secrets.json
+.env*
+! .env.example
