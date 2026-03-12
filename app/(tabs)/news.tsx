@@ -262,11 +262,11 @@ export default function NewsScreen() {
           {/* Footer */}
           <View style={styles.newsFooter}>
             <View style={styles.newsMetaLeft}>
-              <Text style={styles.newsSource}>{item.source}</Text>
+              <Text style={styles.newsSource}>Source: {item.source}</Text>
               {item.date && (
                 <>
                   <Text style={styles.newsDivider}>•</Text>
-                  <Text style={styles.newsDate}>{item.date}</Text>
+                  <Text style={styles.newsDate}>Published: {item.date}</Text>
                 </>
               )}
             </View>
