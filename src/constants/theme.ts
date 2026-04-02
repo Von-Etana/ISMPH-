@@ -11,18 +11,18 @@ import {
 } from 'lucide-react-native';
 
 export const COLORS = {
-  primary: '#113203', // Deep Green (user-specified)
-  primaryDark: '#0A1F02',
-  primaryLight: '#2D5A0F',
-  secondary: '#C62828', // Deeper Red
-  secondaryDark: '#8E0000',
-  secondaryLight: '#EF5350',
-  accent: '#FFD740', // Amber Accent
-  background: '#F8F9FA', // Softer White
+  primary: '#008080', // Teal Green
+  primaryDark: '#006666',
+  primaryLight: '#339999',
+  secondary: '#004c4c', // Teal Blue
+  secondaryDark: '#003333',
+  secondaryLight: '#006666',
+  accent: '#4DB6AC', // Soft Teal Accent
+  background: '#F0F4F4', // Very light teal-tinted grey
   backgroundDark: '#121212',
   surface: '#FFFFFF',
   surfaceDark: '#1E1E1E',
-  text: '#263238', // Blue-ish Grey for text instead of pure black
+  text: '#263238',
   textDark: '#ECEFF1',
   textSecondary: '#546E7A',
   textSecondaryDark: '#B0BEC5',
@@ -30,7 +30,7 @@ export const COLORS = {
   borderDark: '#37474F',
   error: '#D32F2F',
   warning: '#FFA000',
-  info: '#0288D1',
+  info: '#00ACC1', // Cyan-Teal Info
   success: '#2E7D32',
   white: '#FFFFFF',
   black: '#000000',
