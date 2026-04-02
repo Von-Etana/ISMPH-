@@ -19,7 +19,7 @@
         "backgroundColor": "#2E7D32"
       },
       "package": "com.vonetana.boltexponativewind",
-      "versionCode": 11,
+      "versionCode": 12,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
@@ -44,7 +44,8 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true

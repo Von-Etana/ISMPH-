@@ -55,7 +55,9 @@ export default function AuthScreen() {
           text2: 'Successfully signed in',
         });
       }
-      router.replace('/(tabs)');
+      setTimeout(() => {
+        router.replace('/(tabs)');
+      }, 300);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Please try again';
       Toast.show({

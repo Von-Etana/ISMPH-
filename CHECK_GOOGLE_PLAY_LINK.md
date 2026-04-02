@@ -124,7 +124,7 @@ You'll see the SHA-1 fingerprint.
 
 ### The SHA-1 You Want
 ```
-C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
+DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53
 ```
 
 **Important Questions:**
@@ -152,7 +152,7 @@ When you upload your first build to Google Play Console, Google creates a **Play
 
 2. **App Signing Key SHA-1** (Google Play's key)
    - Used by Google Play to sign the final APK
-   - This might be: `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1`
+   - This might be: `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`
 
 **For Firebase/Google Services, you need to add BOTH SHA-1 fingerprints!**
 

@@ -7,88 +7,48 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
+  Image,
 } from 'react-native';
 import { Card } from '@/src/components/Card';
 import { Button } from '@/src/components/Button';
+import { FormInput } from '@/src/components/FormInput';
 import { Badge } from '@/src/components/Badge';
 import { COLORS, SPACING, TYPOGRAPHY, STATES } from '@/src/constants/theme';
 import { FileText, Clock, CheckCircle, XCircle, Eye, MessageSquare } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
-
-interface AdminReport {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  state: string;
-  status: string;
-  priority: string;
-  createdAt: string;
-  reporterName: string;
-  reporterEmail: string;
-  reporterPhone: string;
-  reporterAddress: string;
-  mediaCount: number;
-}
-
-const ADMIN_REPORTS = [
-  {
-    id: '1',
-    title: 'Equipment Shortage at Ikeja PHC',
-    category: 'Equipment Shortage',
-    description: 'Critical shortage of medical equipment affecting patient care quality.',
-    state: 'Lagos',
-    status: 'pending',
-    priority: 'high',
-    createdAt: '2025-10-28',
-    reporterName: 'John Doe',
-    reporterEmail: 'john@example.com',
-    reporterPhone: '080-1234-5678',
-    reporterAddress: 'Ikeja, Lagos',
-    mediaCount: 3,
-  },
-  {
-    id: '2',
-    title: 'Excellent Service at Garki Hospital',
-    category: 'Service Quality',
-    description: 'Commendable service delivery and staff professionalism.',
-    state: 'Abuja',
-    status: 'approved',
-    priority: 'low',
-    createdAt: '2025-10-27',
-    reporterName: 'Jane Smith',
-    reporterEmail: 'jane@example.com',
-    reporterPhone: '',
-    reporterAddress: '',
-    mediaCount: 0,
-  },
-  {
-    id: '3',
-    title: 'Infrastructure Upgrade Needed in Kano',
-    category: 'Infrastructure',
-    description: 'Building requires immediate renovation and maintenance.',
-    state: 'Kano',
-    status: 'pending',
-    priority: 'medium',
-    createdAt: '2025-10-26',
-    reporterName: 'Ahmed Musa',
-    reporterEmail: 'ahmed@example.com',
-    reporterPhone: '080-9876-5432',
-    reporterAddress: 'Kano Municipal',
-    mediaCount: 5,
-  },
-];
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '@/src/store';
+import { fetchAllReports, updateReportStatus } from '@/src/store/slices/reportsSlice';
+import { Report } from '@/src/types';
 
 export default function AdminReportsScreen() {
-  const [selectedReport, setSelectedReport] = useState<AdminReport | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const { allReports, loading } = useSelector((state: RootState) => state.reports);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
-  const filteredReports = ADMIN_REPORTS.filter(report =>
-    filterStatus === 'all' || report.status === filterStatus
-  );
+  React.useEffect(() => {
+    dispatch(fetchAllReports());
+  }, [dispatch]);
 
-  const handleApproveReport = (reportId: string) => {
+  const filteredReports = allReports.filter(report => {
+    const matchesStatus = filterStatus === 'all' || report.status === filterStatus;
+    const matchesSearch = 
+      report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (report.reporter_name?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+    
+    const reportDate = new Date(report.created_at).getTime();
+    const matchesStartDate = !startDate || reportDate >= new Date(startDate).getTime();
+    const matchesEndDate = !endDate || reportDate <= new Date(endDate).getTime() + 86400000; // End of day
+
+    return matchesStatus && matchesSearch && matchesStartDate && matchesEndDate;
+  });
+
+  const handleApproveReport = async (reportId: string) => {
     Alert.alert(
       'Approve Report',
       'Are you sure you want to approve this report?',
@@ -96,19 +56,28 @@ export default function AdminReportsScreen() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Approve',
-          onPress: () => {
-            Toast.show({
-              type: 'success',
-              text1: 'Report Approved',
-              text2: 'The report has been approved and published',
-            });
+          onPress: async () => {
+            try {
+              await dispatch(updateReportStatus({ reportId, status: 'approved' })).unwrap();
+              Toast.show({
+                type: 'success',
+                text1: 'Report Approved',
+                text2: 'The report has been approved and published',
+              });
+            } catch (error: any) {
+              Toast.show({
+                type: 'error',
+                text1: 'Approval Failed',
+                text2: error || 'Please try again',
+              });
+            }
           }
         }
       ]
     );
   };
 
-  const handleRejectReport = (reportId: string) => {
+  const handleRejectReport = async (reportId: string) => {
     Alert.alert(
       'Reject Report',
       'Are you sure you want to reject this report?',
@@ -117,12 +86,21 @@ export default function AdminReportsScreen() {
         {
           text: 'Reject',
           style: 'destructive',
-          onPress: () => {
-            Toast.show({
-              type: 'error',
-              text1: 'Report Rejected',
-              text2: 'The report has been rejected',
-            });
+          onPress: async () => {
+            try {
+              await dispatch(updateReportStatus({ reportId, status: 'rejected' })).unwrap();
+              Toast.show({
+                type: 'error',
+                text1: 'Report Rejected',
+                text2: 'The report has been rejected',
+              });
+            } catch (error: any) {
+              Toast.show({
+                type: 'error',
+                text1: 'Rejection Failed',
+                text2: error || 'Please try again',
+              });
+            }
           }
         }
       ]
@@ -138,14 +116,14 @@ export default function AdminReportsScreen() {
     }
   };
 
-  const renderReportCard = (report: AdminReport) => (
+  const renderReportCard = (report: Report) => (
     <Card key={report.id} style={styles.reportCard} variant="elevated">
       <View style={styles.reportHeader}>
         <View style={styles.reportHeaderLeft}>
           <Badge label={report.status.toUpperCase()} variant={report.status} type="status" />
           <Badge label={report.priority.toUpperCase()} variant={report.priority} type="priority" style={{ marginLeft: SPACING.xs }} />
         </View>
-        <Text style={styles.reportDate}>{new Date(report.createdAt).toLocaleDateString()}</Text>
+        <Text style={styles.reportDate}>{new Date(report.created_at).toLocaleDateString()}</Text>
       </View>
 
       <Text style={styles.reportTitle}>{report.title}</Text>
@@ -153,11 +131,11 @@ export default function AdminReportsScreen() {
       <Text style={styles.reportDescription} numberOfLines={2}>{report.description}</Text>
 
       <View style={styles.reportMeta}>
-        <Text style={styles.reporterName}>Reported by: {report.reporterName}</Text>
-        {report.mediaCount > 0 && (
+        <Text style={styles.reporterName}>State: {report.state}</Text>
+        {report.media_urls && report.media_urls.length > 0 && (
           <View style={styles.mediaBadge}>
             <FileText size={14} color={COLORS.primary} />
-            <Text style={styles.mediaText}>{report.mediaCount} media</Text>
+            <Text style={styles.mediaText}>{report.media_urls.length} media</Text>
           </View>
         )}
       </View>
@@ -202,6 +180,49 @@ export default function AdminReportsScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Report Management</Text>
         <Text style={styles.headerSubtitle}>Review and manage submitted reports</Text>
+        
+        <View style={styles.searchContainer}>
+          <FormInput
+            placeholder="Search by title or reporter..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            containerStyle={styles.searchInput}
+            leftIcon={<Eye size={20} color={COLORS.textSecondary} />}
+          />
+        </View>
+
+        <View style={styles.dateFilterRow}>
+          <View style={styles.dateInputWrapper}>
+            <Text style={styles.dateLabel}>From:</Text>
+            <FormInput
+              placeholder="YYYY-MM-DD"
+              value={startDate}
+              onChangeText={setStartDate}
+              containerStyle={styles.dateInput}
+            />
+          </View>
+          <View style={styles.dateInputWrapper}>
+            <Text style={styles.dateLabel}>To:</Text>
+            <FormInput
+              placeholder="YYYY-MM-DD"
+              value={endDate}
+              onChangeText={setEndDate}
+              containerStyle={styles.dateInput}
+            />
+          </View>
+          {(startDate || endDate || searchQuery) && (
+            <TouchableOpacity 
+              style={styles.clearFilters} 
+              onPress={() => {
+                setStartDate('');
+                setEndDate('');
+                setSearchQuery('');
+              }}
+            >
+              <XCircle size={20} color={COLORS.white} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Filter Tabs */}
@@ -223,17 +244,17 @@ export default function AdminReportsScreen() {
         <View style={styles.statsRow}>
           <Card style={styles.statCard} variant="elevated">
             <FileText size={24} color={COLORS.info} />
-            <Text style={styles.statValue}>{ADMIN_REPORTS.length}</Text>
+            <Text style={styles.statValue}>{allReports.length}</Text>
             <Text style={styles.statLabel}>Total Reports</Text>
           </Card>
           <Card style={styles.statCard} variant="elevated">
             <Clock size={24} color={COLORS.warning} />
-            <Text style={styles.statValue}>{ADMIN_REPORTS.filter(r => r.status === 'pending').length}</Text>
+            <Text style={styles.statValue}>{allReports.filter(r => r.status === 'pending').length}</Text>
             <Text style={styles.statLabel}>Pending</Text>
           </Card>
           <Card style={styles.statCard} variant="elevated">
             <CheckCircle size={24} color={COLORS.success} />
-            <Text style={styles.statValue}>{ADMIN_REPORTS.filter(r => r.status === 'approved').length}</Text>
+            <Text style={styles.statValue}>{allReports.filter(r => r.status === 'approved').length}</Text>
             <Text style={styles.statLabel}>Approved</Text>
           </Card>
         </View>
@@ -271,25 +292,38 @@ export default function AdminReportsScreen() {
 
               <Card style={styles.contactCard} variant="outlined">
                 <Text style={styles.contactTitle}>Reporter Information</Text>
-                <Text style={styles.contactInfo}>Name: {selectedReport.reporterName}</Text>
-                <Text style={styles.contactInfo}>Email: {selectedReport.reporterEmail}</Text>
-                {selectedReport.reporterPhone && (
-                  <Text style={styles.contactInfo}>Phone: {selectedReport.reporterPhone}</Text>
+                <Text style={styles.contactInfo}>Name: {selectedReport.reporter_name || 'N/A'}</Text>
+                <Text style={styles.contactInfo}>Email: {selectedReport.reporter_email || 'N/A'}</Text>
+                {selectedReport.reporter_phone && (
+                  <Text style={styles.contactInfo}>Phone: {selectedReport.reporter_phone}</Text>
                 )}
-                {selectedReport.reporterAddress && (
-                  <Text style={styles.contactInfo}>Address: {selectedReport.reporterAddress}</Text>
+                {selectedReport.reporter_address && (
+                  <Text style={styles.contactInfo}>Address: {selectedReport.reporter_address}</Text>
                 )}
               </Card>
 
-              {selectedReport.mediaCount > 0 && (
-                <Card style={styles.mediaCard} variant="outlined">
-                  <Text style={styles.mediaTitle}>Attached Media</Text>
-                  <Text style={styles.mediaCount}>{selectedReport.mediaCount} files attached</Text>
-                </Card>
+              {selectedReport.media_urls && selectedReport.media_urls.length > 0 && (
+                <View style={styles.mediaSection}>
+                  <Text style={styles.mediaTitle}>Attached Media ({selectedReport.media_urls.length})</Text>
+                  <View style={styles.mediaGrid}>
+                    {selectedReport.media_urls.map((url, index) => (
+                      <TouchableOpacity 
+                        key={index} 
+                        style={styles.mediaGridItem}
+                        onPress={() => {
+                          // In a real app, this would open a full-screen viewer
+                          Alert.alert('View Image', 'Opening full screen viewer...');
+                        }}
+                      >
+                        <Image source={{ uri: url }} style={styles.mediaGridImage} />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
               )}
 
               <Text style={styles.submittedDate}>
-                Submitted: {new Date(selectedReport.createdAt).toLocaleString()}
+                Submitted: {new Date(selectedReport.created_at).toLocaleString()}
               </Text>
 
               {selectedReport.status === 'pending' && (
@@ -325,7 +359,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   header: { backgroundColor: COLORS.primary, padding: SPACING.lg, paddingTop: SPACING.xl + 20 },
   headerTitle: { ...TYPOGRAPHY.h2, color: COLORS.white },
-  headerSubtitle: { ...TYPOGRAPHY.body2, color: COLORS.white, opacity: 0.9, marginTop: SPACING.xs },
+  headerSubtitle: { ...TYPOGRAPHY.body2, color: COLORS.white, opacity: 0.9, marginTop: SPACING.xs, marginBottom: SPACING.md },
+  searchContainer: { marginBottom: SPACING.sm },
+  searchInput: { backgroundColor: COLORS.white, borderRadius: 8 },
+  dateFilterRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  dateInputWrapper: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
+  dateLabel: { ...TYPOGRAPHY.caption, color: COLORS.white, fontWeight: '600' },
+  dateInput: { flex: 1, backgroundColor: COLORS.white, borderRadius: 8, height: 40 },
+  clearFilters: { padding: SPACING.xs },
 
   filterTabs: { flexDirection: 'row', backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   filterTab: { flex: 1, paddingVertical: SPACING.md, alignItems: 'center' },
@@ -379,10 +420,11 @@ const styles = StyleSheet.create({
   contactTitle: { ...TYPOGRAPHY.body2, fontWeight: '600', marginBottom: SPACING.sm },
   contactInfo: { ...TYPOGRAPHY.body2, color: COLORS.textSecondary, marginBottom: SPACING.xs },
 
-  mediaCard: { marginBottom: SPACING.md },
-  mediaTitle: { ...TYPOGRAPHY.body2, fontWeight: '600', marginBottom: SPACING.xs },
-  mediaCount: { ...TYPOGRAPHY.body2, color: COLORS.textSecondary },
-
   submittedDate: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginBottom: SPACING.lg },
   modalActions: { flexDirection: 'row', marginTop: SPACING.lg },
+  mediaSection: { marginBottom: SPACING.lg },
+  mediaTitle: { ...TYPOGRAPHY.body2, fontWeight: '600', marginBottom: SPACING.md, color: COLORS.text },
+  mediaGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
+  mediaGridItem: { width: '48%', aspectRatio: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: COLORS.surface },
+  mediaGridImage: { width: '100%', height: '100%' },
 });

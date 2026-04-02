@@ -7,16 +7,16 @@
 SHA1: 28:B1:56:77:C5:02:46:54:D1:F0:CF:E6:E3:ED:E8:AE:07:C8:0A:24
 ```
 
-### New Keystore (Your keystore)
-```
-SHA1: C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
-```
+### New Keystore Fingerprints
+- **MD5**: `77:83:97:A5:44:6E:12:4D:16:A8:DA:FC:B3:9B:94:0C`
+- **SHA-1**: `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`
+- **SHA-256**: `7B:BC:B6:A8:57:1F:65:ED:CC:91:E2:92:0F:C1:F2:64:CE:08:A0:13:37:A8:A3:77:B3:E4:91:4D:88:0F:95:44`
 
 ---
 
 ## ⚠️ IMPORTANT: What You Need
 
-To change the keystore, you need the **actual keystore file** (`.jks` or `.keystore`) that has the SHA-1 fingerprint `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1`.
+To change the keystore, you need the **actual keystore file** (`.jks` or `.keystore`) that has the SHA-1 fingerprint `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`.
 
 You also need:
 - 🔑 **Keystore password**
@@ -63,7 +63,7 @@ keytool -list -v -keystore path/to/your-keystore.jks -alias your-alias
 
 Look for the SHA-1 fingerprint in the output. It should be:
 ```
-C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
+DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53
 ```
 
 #### Step 2: Upload to EAS
@@ -98,7 +98,7 @@ Select: **production** → **Keystore: View details**
 
 You should see:
 ```
-SHA1: C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
+SHA1: DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53
 ```
 
 #### Step 4: Build
@@ -196,7 +196,7 @@ https://console.firebase.google.com
 
 **Your keystore:**
 ```
-C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
+DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53
 ```
 
 5. Click **Save**

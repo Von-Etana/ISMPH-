@@ -1,11 +1,29 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Platform } from 'react-native';
 import { router } from 'expo-router';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/src/store';
 import { Card } from '@/src/components/Card';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
-import { ArrowLeft, Mail, Phone, Globe, MapPin } from 'lucide-react-native';
+import { ArrowLeft, Mail, Phone, Globe, MapPin, MessageSquare } from 'lucide-react-native';
 
 export default function ContactScreen() {
+  const { profile } = useSelector((state: RootState) => state.auth);
+
+  const getWhatsAppInfo = () => {
+    const state = profile?.state?.toLowerCase() || '';
+    if (state.includes('lagos')) {
+      return { name: 'Lagos Support Group', link: process.env.EXPO_PUBLIC_WHATSAPP_LAGOS };
+    } else if (state.includes('kano')) {
+      return { name: 'Kano Support Group', link: process.env.EXPO_PUBLIC_WHATSAPP_KANO };
+    } else if (state.includes('kaduna')) {
+      return { name: 'Kaduna Support Group', link: process.env.EXPO_PUBLIC_WHATSAPP_KADUNA };
+    }
+    return { name: 'General Support Group', link: process.env.EXPO_PUBLIC_WHATSAPP_LAGOS };
+  };
+
+  const whatsappInfo = getWhatsAppInfo();
+
   const handleEmailPress = () => {
     Linking.openURL('mailto:info@ismph.org');
   };
@@ -18,6 +36,12 @@ export default function ContactScreen() {
     Linking.openURL('https://ismph.org');
   };
 
+  const handleWhatsAppPress = () => {
+    if (whatsappInfo.link) {
+      Linking.openURL(whatsappInfo.link);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -25,7 +49,7 @@ export default function ContactScreen() {
           <ArrowLeft size={24} color={COLORS.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Contact Us</Text>
-        <View style={{ width: 40 }} /> {/* Spacer to align title */}
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.content}>
@@ -34,6 +58,18 @@ export default function ContactScreen() {
         </Text>
 
         <View style={styles.section}>
+          <Card style={styles.contactCard} variant="outlined">
+            <TouchableOpacity style={styles.contactButton} onPress={handleWhatsAppPress}>
+              <View style={[styles.contactIcon, { backgroundColor: '#25D366' + '20' }]}>
+                <MessageSquare size={24} color="#25D366" />
+              </View>
+              <View style={styles.contactTextContainer}>
+                <Text style={styles.contactLabel}>WhatsApp Support</Text>
+                <Text style={styles.contactValue}>{whatsappInfo.name}</Text>
+              </View>
+            </TouchableOpacity>
+          </Card>
+
           <Card style={styles.contactCard} variant="outlined">
             <TouchableOpacity style={styles.contactButton} onPress={handleEmailPress}>
               <View style={[styles.contactIcon, { backgroundColor: COLORS.primary + '20' }]}>

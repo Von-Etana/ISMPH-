@@ -12,8 +12,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { router, Href } from 'expo-router';
 import { RootState, AppDispatch } from '@/src/store';
 import { fetchDiseases } from '@/src/store/slices/diseasesSlice';
+import { fetchApprovedReports, fetchReportStats } from '@/src/store/slices/reportsSlice';
 import { Disease } from '@/src/types';
-import { fetchApprovedReports } from '@/src/store/slices/reportsSlice';
 import { Card } from '@/src/components/Card';
 import { Badge } from '@/src/components/Badge';
 import { LoadingSpinner } from '@/src/components/LoadingSpinner';
@@ -28,6 +28,7 @@ import {
   AlertCircle,
   Settings,
   ChevronRight,
+  Newspaper,
 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
@@ -36,7 +37,7 @@ export default function AdminDashboard() {
   const dispatch = useDispatch<AppDispatch>();
   const { profile } = useSelector((state: RootState) => state.auth);
   const { diseases, loading: diseasesLoading } = useSelector((state: RootState) => state.diseases);
-  const { reports } = useSelector((state: RootState) => state.reports);
+  const { reports, stats: reportStats } = useSelector((state: RootState) => state.reports);
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -45,7 +46,11 @@ export default function AdminDashboard() {
   }, []);
 
   const loadData = async () => {
-    await Promise.all([dispatch(fetchDiseases()), dispatch(fetchApprovedReports())]);
+    await Promise.all([
+      dispatch(fetchDiseases()),
+      dispatch(fetchApprovedReports()),
+      dispatch(fetchReportStats())
+    ]);
   };
 
   const onRefresh = async () => {
@@ -60,11 +65,11 @@ export default function AdminDashboard() {
   const totalRecovered = diseases.reduce((sum: number, d: Disease) => sum + d.recovered, 0);
   const activeCases = totalCases - totalRecovered - totalDeaths;
 
-  // Mock admin stats
+  // Mock admin stats (modified to use real stats where available)
   const adminStats = {
     totalUsers: 1247,
-    totalReports: 89,
-    pendingReports: 23,
+    totalReports: reportStats.total,
+    pendingReports: reportStats.pending,
     resolvedFeedback: 156,
     criticalAlerts: 3,
   };
@@ -105,6 +110,14 @@ export default function AdminDashboard() {
       icon: Users,
       color: COLORS.info,
       route: '/admin/users',
+    },
+    {
+      id: 'news',
+      title: 'Manage News',
+      subtitle: 'Approve, reject, or delete articles',
+      icon: Newspaper,
+      color: COLORS.primary,
+      route: '/admin/news',
     },
   ];
 

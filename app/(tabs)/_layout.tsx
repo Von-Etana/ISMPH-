@@ -5,7 +5,7 @@ import { RootState, AppDispatch } from '@/src/store';
 import { signOut } from '@/src/store/slices/authSlice';
 import { View, TouchableOpacity, Text, Modal, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Home, Newspaper, FileText, MessageSquare, User, MessageCircle, Menu, Settings, LogOut, Bell, Globe, BarChart3, Shield } from 'lucide-react-native';
+import { Home, Newspaper, FileText, MessageSquare, User, MessageCircle, Menu, Settings, LogOut, Bell, Globe, BarChart3, Shield, HelpCircle } from 'lucide-react-native';
 import { COLORS, SPACING, TYPOGRAPHY } from '@/src/constants/theme';
 import Toast from 'react-native-toast-message';
 
@@ -80,9 +80,14 @@ export default function TabLayout() {
         <TouchableOpacity onPress={() => router.replace('/(tabs)')}>
           <Text style={styles.headerTitle}>PHC State</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setShowMenu(true)} style={styles.menuButton}>
-          <Menu size={24} color={COLORS.white} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/help')} style={styles.menuButton}>
+            <HelpCircle size={24} color={COLORS.white} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowMenu(true)} style={styles.menuButton}>
+            <Menu size={24} color={COLORS.white} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <Tabs
@@ -150,6 +155,12 @@ export default function TabLayout() {
         />
         <Tabs.Screen
           name="profile"
+          options={{
+            href: null, // Hide from tab bar
+          }}
+        />
+        <Tabs.Screen
+          name="help"
           options={{
             href: null, // Hide from tab bar
           }}

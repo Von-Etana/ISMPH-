@@ -17,7 +17,7 @@ We need to find the **SHA-1 fingerprint** of the keystore used in this build.
 
 This will tell us if this build matches the keystore that Google Play Console expects:
 ```
-C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
+DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53
 ```
 
 ---
@@ -81,7 +81,7 @@ Look for the SHA-1 fingerprint in the output.
 
 If the SHA-1 from this build is:
 ```
-C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
+DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53
 ```
 
 **Then:**
@@ -170,7 +170,7 @@ Go to: https://play.google.com/console → Your app → **Release**
 
 ## 💡 Most Likely Scenario
 
-Based on the error message, the SHA-1 `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1` is either:
+Based on the error message, the SHA-1 `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53` is either:
 
 1. **The Upload Key** from the first build uploaded to Google Play
 2. **The App Signing Key** created by Google Play when you enrolled in Play App Signing

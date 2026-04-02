@@ -11,6 +11,8 @@ interface FormInputProps extends Omit<TextInputProps, 'secureTextEntry'> {
   required?: boolean;
   secureTextEntry?: boolean;
   showPasswordToggle?: boolean;
+  leftIcon?: React.ReactNode;
+  containerStyle?: any;
 }
 
 export const FormInput: React.FC<FormInputProps> = ({
@@ -21,6 +23,8 @@ export const FormInput: React.FC<FormInputProps> = ({
   required,
   secureTextEntry = false,
   showPasswordToggle = false,
+  leftIcon,
+  containerStyle,
   ...props
 }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -28,7 +32,7 @@ export const FormInput: React.FC<FormInputProps> = ({
   const actualSecureTextEntry = secureTextEntry && !isPasswordVisible;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       {label && (
         <Text style={styles.label}>
           {label}
@@ -36,8 +40,18 @@ export const FormInput: React.FC<FormInputProps> = ({
         </Text>
       )}
       <View style={styles.inputContainer}>
+        {leftIcon && (
+          <View style={styles.leftIconContainer}>
+            {leftIcon}
+          </View>
+        )}
         <TextInput
-          style={[styles.input, error && styles.inputError, showPasswordToggle && styles.inputWithIcon]}
+          style={[
+            styles.input, 
+            error ? styles.inputError : null, 
+            showPasswordToggle ? styles.inputWithIcon : null,
+            leftIcon ? styles.inputWithLeftIcon : null
+          ]}
           value={value}
           onChangeText={onChangeText}
           placeholderTextColor={COLORS.textSecondary}
@@ -91,6 +105,9 @@ const styles = StyleSheet.create({
   inputWithIcon: {
     paddingRight: SPACING.xl,
   },
+  inputWithLeftIcon: {
+    paddingLeft: SPACING.xl + 10,
+  },
   inputError: {
     borderColor: COLORS.error,
   },
@@ -100,6 +117,14 @@ const styles = StyleSheet.create({
     top: '50%',
     transform: [{ translateY: -10 }],
     padding: SPACING.xs,
+  },
+  leftIconContainer: {
+    position: 'absolute',
+    left: SPACING.sm,
+    top: '50%',
+    transform: [{ translateY: -10 }],
+    padding: SPACING.xs,
+    zIndex: 1,
   },
   errorText: {
     ...TYPOGRAPHY.caption,

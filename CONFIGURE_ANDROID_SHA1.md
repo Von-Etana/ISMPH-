@@ -1,9 +1,9 @@
 # 🔐 Configure Android Keystore with Your SHA-1
 
-## Your SHA-1 Fingerprint
-```
-C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
-```
+## Your Certificate Fingerprints
+- **MD5**: `77:83:97:A5:44:6E:12:4D:16:A8:DA:FC:B3:9B:94:0C`
+- **SHA-1**: `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`
+- **SHA-256**: `7B:BC:B6:A8:57:1F:65:ED:CC:91:E2:92:0F:C1:F2:64:CE:08:A0:13:37:A8:A3:77:B3:E4:91:4D:88:0F:95:44`
 
 ---
 
@@ -33,7 +33,7 @@ You'll see the current SHA-1 fingerprint.
 3. Click **⚙️ Project Settings**
 4. Scroll to **Your apps** → Select your Android app
 5. Under **SHA certificate fingerprints**, click **Add fingerprint**
-6. Paste: `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1`
+6. Paste: `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`
 7. Click **Save**
 
 ### Step 3: Download Updated google-services.json
@@ -125,6 +125,7 @@ eas secret:create --name KEY_PASSWORD --value "your-key-password" --type string
 
 ### View Current Credentials
 ```bash
+# SHA1: 28:B1:56:77:C5:02:46:54:D1:F0:CF:E6:E3:ED:E8:AE:07:C8:0A:24
 eas credentials -p android
 # Select: production → Keystore: View details
 ```

@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { NewsArticle } from '../../constants/newsData';
+import { NewsArticle, NewsStatus } from '../../types';
 import { newsAPIService } from '../../services/newsApi';
+import { newsService } from '../../services/newsService';
 
 interface NewsState {
   articles: NewsArticle[];
+  allArticles: NewsArticle[]; // For admin use
   loading: boolean;
   error: string | null;
   lastFetched: string | null;
@@ -11,20 +13,21 @@ interface NewsState {
 
 const initialState: NewsState = {
   articles: [],
+  allArticles: [],
   loading: false,
   error: null,
   lastFetched: null,
 };
 
+// Existing API thunks
 export const fetchNewsFromAPI = createAsyncThunk(
   'news/fetchFromAPI',
   async (query: string = 'health Nigeria', { rejectWithValue }) => {
     try {
       const articles = await newsAPIService.getHealthNews(query);
       return articles;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch news';
-      return rejectWithValue(errorMessage);
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch news from API');
     }
   }
 );
@@ -35,22 +38,70 @@ export const fetchTopHeadlines = createAsyncThunk(
     try {
       const articles = await newsAPIService.getTopHealthHeadlines();
       return articles;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch headlines';
-      return rejectWithValue(errorMessage);
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch headlines');
     }
   }
 );
 
-export const searchNews = createAsyncThunk(
-  'news/search',
-  async ({ query, fromDate, toDate }: { query: string; fromDate?: string; toDate?: string }, { rejectWithValue }) => {
+// New Supabase thunks
+export const fetchApprovedNews = createAsyncThunk<
+  NewsArticle[],
+  void,
+  { rejectValue: string }
+>(
+  'news/fetchApproved',
+  async (_, { rejectWithValue }) => {
     try {
-      const articles = await newsAPIService.searchHealthNews(query, fromDate, toDate);
-      return articles;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to search news';
-      return rejectWithValue(errorMessage);
+      return await newsService.fetchApprovedNews();
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch news');
+    }
+  }
+);
+
+export const fetchAllNewsAdmin = createAsyncThunk<
+  NewsArticle[],
+  void,
+  { rejectValue: string }
+>(
+  'news/fetchAllAdmin',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await newsService.fetchAllNews();
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch all news');
+    }
+  }
+);
+
+export const updateNewsStatus = createAsyncThunk<
+  NewsArticle,
+  { id: string; status: NewsStatus },
+  { rejectValue: string }
+>(
+  'news/updateStatus',
+  async ({ id, status }, { rejectWithValue }) => {
+    try {
+      return await newsService.updateNewsStatus(id, status);
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update news status');
+    }
+  }
+);
+
+export const deleteNews = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>(
+  'news/delete',
+  async (id, { rejectWithValue }) => {
+    try {
+      await newsService.deleteNews(id);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to delete news');
     }
   }
 );
@@ -69,44 +120,59 @@ const newsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // API Fetch
       .addCase(fetchNewsFromAPI.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchNewsFromAPI.fulfilled, (state, action) => {
         state.loading = false;
-        state.articles = action.payload;
+        state.articles = action.payload as unknown as NewsArticle[];
         state.lastFetched = new Date().toISOString();
       })
       .addCase(fetchNewsFromAPI.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(fetchTopHeadlines.pending, (state) => {
+      // Supabase fetch approved
+      .addCase(fetchApprovedNews.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
-      .addCase(fetchTopHeadlines.fulfilled, (state, action) => {
+      .addCase(fetchApprovedNews.fulfilled, (state, action) => {
         state.loading = false;
         state.articles = action.payload;
-        state.lastFetched = new Date().toISOString();
       })
-      .addCase(fetchTopHeadlines.rejected, (state, action) => {
+      .addCase(fetchApprovedNews.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = action.payload || 'Error';
       })
-      .addCase(searchNews.pending, (state) => {
+      // Admin fetch all
+      .addCase(fetchAllNewsAdmin.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
-      .addCase(searchNews.fulfilled, (state, action) => {
+      .addCase(fetchAllNewsAdmin.fulfilled, (state, action) => {
         state.loading = false;
-        state.articles = action.payload;
-        state.lastFetched = new Date().toISOString();
+        state.allArticles = action.payload;
       })
-      .addCase(searchNews.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+      // Update Status
+      .addCase(updateNewsStatus.fulfilled, (state, action) => {
+        const index = state.allArticles.findIndex(a => a.id === action.payload.id);
+        if (index !== -1) {
+          state.allArticles[index] = action.payload;
+        }
+        // Also update in public articles if it was approved/became something else
+        const publicIndex = state.articles.findIndex(a => a.id === action.payload.id);
+        if (action.payload.status === 'approved') {
+          if (publicIndex !== -1) state.articles[publicIndex] = action.payload;
+          else state.articles.unshift(action.payload);
+        } else {
+          if (publicIndex !== -1) state.articles.splice(publicIndex, 1);
+        }
+      })
+      // Delete
+      .addCase(deleteNews.fulfilled, (state, action) => {
+        state.allArticles = state.allArticles.filter(a => a.id !== action.payload);
+        state.articles = state.articles.filter(a => a.id !== action.payload);
       });
   },
 });

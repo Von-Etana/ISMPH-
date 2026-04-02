@@ -6,7 +6,7 @@ Your Google Play Console is rejecting the app bundle because:
 
 **Expected SHA-1 (registered in Google Play):**
 ```
-C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
+DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53
 ```
 
 **Actual SHA-1 (your current EAS keystore):**
@@ -21,7 +21,7 @@ C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
 
 ## 🎯 Root Cause
 
-You previously uploaded a build to Google Play Console using a keystore with SHA-1 `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1`.
+You previously uploaded a build to Google Play Console using a keystore with SHA-1 `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`.
 
 Now EAS is using a different keystore (SHA-1 `28:B1:56:77:C5:02:46:54:D1:F0:CF:E6:E3:ED:E8:AE:07:C8:0A:24`).
 
@@ -31,7 +31,7 @@ Now EAS is using a different keystore (SHA-1 `28:B1:56:77:C5:02:46:54:D1:F0:CF:E
 
 ## ✅ Solution: Upload Your Original Keystore to EAS
 
-You need to find and upload the original keystore file that has SHA-1 `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1`.
+You need to find and upload the original keystore file that has SHA-1 `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`.
 
 ### Step 1: Locate Your Original Keystore
 
@@ -58,7 +58,7 @@ keytool -list -v -keystore path/to/your-keystore.jks -alias your-alias
 
 **Look for:**
 ```
-SHA1: C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
+SHA1: DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53
 ```
 
 **If you don't know the alias, list all aliases:**
@@ -106,7 +106,7 @@ Select: **production** → **Keystore: View details**
 
 **You should see:**
 ```
-SHA1: C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
+SHA1: DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53
 ```
 
 ### Step 6: Submit to Google Play
@@ -204,7 +204,7 @@ Check:
 ## ✅ Quick Checklist
 
 - [ ] Find the original keystore file
-- [ ] Verify it has SHA-1: `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1`
+- [ ] Verify it has SHA-1: `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`
 - [ ] Know the keystore password
 - [ ] Know the key alias
 - [ ] Know the key password
@@ -240,7 +240,7 @@ Once you provide this information, I'll give you exact commands to fix this! �
 
 ## 🎯 Summary
 
-**Problem:** Google Play expects SHA-1 `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1`  
+**Problem:** Google Play expects SHA-1 `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`  
 **Current:** EAS is using SHA-1 `28:B1:56:77:C5:02:46:54:D1:F0:CF:E6:E3:ED:E8:AE:07:C8:0A:24`  
 **Solution:** Upload the original keystore to EAS  
 **Result:** Builds will have the correct SHA-1 and Google Play will accept them ✅

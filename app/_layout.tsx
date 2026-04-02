@@ -10,6 +10,7 @@ import { store, AppDispatch, RootState } from '@/src/store';
 import { ErrorBoundary } from '@/src/components/ErrorBoundary';
 import { supabase } from '@/src/services/supabase';
 import { setUser } from '@/src/store/slices/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Suppress specific warnings that can cause issues
 LogBox.ignoreLogs([
@@ -30,13 +31,16 @@ if (Platform.OS !== 'web') {
   }
 }
 
+import { notificationService } from '@/src/services/notificationService';
+
 // Auth listener component
 function AuthListener({ children }: { children: React.ReactNode }) {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const segments = useSegments();
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, profile } = useSelector((state: RootState) => state.auth);
   const [isMounted, setIsMounted] = React.useState(false);
+  const [isFirstLaunch, setIsFirstLaunch] = React.useState<boolean | null>(null);
 
   // Wait for component to mount before allowing navigation
   useEffect(() => {
@@ -46,6 +50,36 @@ function AuthListener({ children }: { children: React.ReactNode }) {
     }, 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Check onboarding status
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      try {
+        const value = await AsyncStorage.getItem('@has_seen_onboarding');
+        setIsFirstLaunch(value === null);
+      } catch (error) {
+        setIsFirstLaunch(false); // In case of error, skip onboarding to prevent blocking
+      }
+    };
+    checkOnboarding();
+  }, []);
+
+  // Handle push notification registration
+  useEffect(() => {
+    if (isAuthenticated && profile?.id && isMounted) {
+      const registerPush = async () => {
+        try {
+          const token = await notificationService.registerForPushNotificationsAsync();
+          if (token) {
+            await notificationService.savePushToken(profile.id, token);
+          }
+        } catch (error) {
+          console.error('[PushRegistration] Error:', error);
+        }
+      };
+      registerPush();
+    }
+  }, [isAuthenticated, profile?.id, isMounted]);
 
   useEffect(() => {
     // Listen for auth state changes
@@ -59,23 +93,24 @@ function AuthListener({ children }: { children: React.ReactNode }) {
 
           // Navigate to auth screen if not already there (only if mounted)
           const inAuthGroup = segments[0] === 'auth';
-          if (!inAuthGroup && isMounted) {
+          const inOnboardingGroup = segments[0] === 'onboarding';
+          if (!inAuthGroup && !inOnboardingGroup && isMounted) {
             setTimeout(() => router.replace('/auth'), 100);
           }
         } else if (event === 'SIGNED_IN' && session) {
           // Fetch and update profile
           try {
-            const { data: profile } = await supabase
+            const { data: profileData } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', session.user.id)
               .single();
 
-            if (profile) {
-              dispatch(setUser(profile));
+            if (profileData) {
+              dispatch(setUser(profileData));
             }
           } catch (error) {
-            console.error('Error fetching profile:', error);
+            console.error('Error fetching profileData:', error);
           }
         } else if (event === 'TOKEN_REFRESHED') {
           console.log('[Auth] Token refreshed successfully');
@@ -90,15 +125,22 @@ function AuthListener({ children }: { children: React.ReactNode }) {
 
   // Handle navigation protection - only after mounted
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || isFirstLaunch === null) return;
 
     const inAuthGroup = segments[0] === 'auth';
+    const inOnboardingGroup = segments[0] === 'onboarding';
 
-    if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to auth if not authenticated
+    // Prioritize onboarding if it's the first launch
+    if (isFirstLaunch && !inOnboardingGroup) {
+      setTimeout(() => router.replace('/onboarding'), 100);
+      return;
+    }
+
+    // Only force auth if completely unauthenticated and not already in auth or onboarding
+    if (!isFirstLaunch && !isAuthenticated && !inAuthGroup && !inOnboardingGroup) {
       setTimeout(() => router.replace('/auth'), 100);
     }
-  }, [isAuthenticated, segments, router, isMounted]);
+  }, [isAuthenticated, segments, router, isMounted, isFirstLaunch]);
 
   return <>{children}</>;
 }
@@ -128,6 +170,7 @@ export default function RootLayout() {
           <AuthListener>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
+              <Stack.Screen name="onboarding" />
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="auth" />
               <Stack.Screen name="admin" />

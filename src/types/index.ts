@@ -4,6 +4,7 @@ export type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected';
 export type ReportPriority = 'low' | 'medium' | 'high' | 'critical';
 export type FeedbackStatus = 'pending' | 'resolved' | 'critical';
 export type DiseaseSeverity = 'low' | 'medium' | 'high' | 'critical';
+export type NewsStatus = 'pending' | 'approved' | 'rejected';
 export type Zone = 'North' | 'South' | 'East' | 'West' | 'Federal';
 
 export interface Profile {
@@ -45,6 +46,10 @@ export interface Report {
   status: ReportStatus;
   media_urls: string[];
   assigned_officer?: string;
+  reporter_name?: string;
+  reporter_phone?: string;
+  reporter_email?: string;
+  reporter_address?: string;
   created_at: string;
   updated_at: string;
 }
@@ -80,10 +85,13 @@ export interface NewsArticle {
   date: string;
   category: string;
   priority: ReportPriority;
-  type: 'news' | 'report';
+  status: NewsStatus;
+  type: 'news' | 'media';
   state: string;
   url?: string;
+  link?: string;
   mediaType?: string;
+  created_at?: string;
 }
 
 export interface AdminStats {

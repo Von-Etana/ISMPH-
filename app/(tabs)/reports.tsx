@@ -10,6 +10,7 @@ import {
   Image,
   Dimensions,
   Platform,
+  FlatList,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { router } from 'expo-router';
@@ -24,6 +25,7 @@ import { COLORS, SPACING, TYPOGRAPHY, STATES } from '@/src/constants/theme';
 import { Plus, FileText, Clock, CheckCircle, XCircle, Camera, Image as ImageIcon, Trash2, BarChart3, TrendingUp, Users, MessageSquare, Activity, Calendar, MapPin, PieChart, type LucideIcon } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
+import { storageService } from '@/src/services/storageService';
 
 const { width } = Dimensions.get('window');
 
@@ -139,6 +141,7 @@ export default function ReportsScreen() {
   const [showForm, setShowForm] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'all' | 'my' | 'pending'>('all');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
 
   const [formData, setFormData] = useState({
     title: '',
@@ -255,9 +258,59 @@ export default function ReportsScreen() {
     }
 
     try {
+      let uploadedUrls: string[] = [];
+      
+      // 1. Upload images if any
+      if (selectedImages.length > 0) {
+        Toast.show({
+          type: 'info',
+          text1: 'Uploading Photos',
+          text2: `Uploading ${selectedImages.length} photo(s)...`,
+        });
+        
+        const uploadResults = await storageService.uploadFiles(
+          selectedImages,
+          (uri, progress) => {
+            setUploadProgress(prev => ({ ...prev, [uri]: progress }));
+          }
+        );
+        uploadedUrls = uploadResults
+          .filter(res => res.url !== null)
+          .map(res => res.url as string);
+          
+        if (uploadedUrls.length < selectedImages.length) {
+          Alert.alert(
+            'Upload Warning',
+            `Only ${uploadedUrls.length} of ${selectedImages.length} photos were uploaded successfully. Do you want to proceed?`,
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Proceed', onPress: () => finalizeSubmission(uploadedUrls) }
+            ]
+          );
+          return;
+        }
+      }
+
+      await finalizeSubmission(uploadedUrls);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Please try again';
+      Toast.show({
+        type: 'error',
+        text1: 'Submission Failed',
+        text2: errorMessage,
+      });
+    }
+  };
+
+  const finalizeSubmission = async (mediaUrls: string[]) => {
+    try {
       await dispatch(submitReport({
         ...formData,
         user_id: profile?.id || '',
+        media_urls: mediaUrls,
+        reporter_name: formData.reporterName,
+        reporter_phone: formData.reporterPhone,
+        reporter_address: formData.reporterAddress,
       })).unwrap();
 
       Toast.show({
@@ -384,48 +437,56 @@ export default function ReportsScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
-        <View style={styles.statsRow}>
-          <TouchableOpacity onPress={() => router.push('/reports/total')}>
-            <Card style={styles.statCard} variant="elevated">
-              <FileText size={24} color={COLORS.info} />
-              <Text style={styles.statValue}>{ANALYTICS_DATA.overview.totalReports}</Text>
-              <Text style={styles.statLabel}>Total</Text>
-            </Card>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/reports/pending')}>
-            <Card style={styles.statCard} variant="elevated">
-              <Clock size={24} color={COLORS.warning} />
-              <Text style={styles.statValue}>{ANALYTICS_DATA.overview.pendingReports}</Text>
-              <Text style={styles.statLabel}>Pending</Text>
-            </Card>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/reports/approved')}>
-            <Card style={styles.statCard} variant="elevated">
-              <CheckCircle size={24} color={COLORS.success} />
-              <Text style={styles.statValue}>{ANALYTICS_DATA.overview.approvedReports}</Text>
-              <Text style={styles.statLabel}>Approved</Text>
-            </Card>
-          </TouchableOpacity>
-        </View>
+      <FlatList
+        style={styles.content}
+        data={DEMO_REPORTS.filter(report => {
+          if (selectedTab === 'pending') return report.status === 'pending';
+          if (selectedTab === 'my') return report.reporterName === profile?.full_name;
+          return true;
+        })}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={{ paddingHorizontal: SPACING.md }}>
+            {renderReport(item)}
+          </View>
+        )}
+        ListHeaderComponent={
+          <>
+            <View style={styles.statsRow}>
+              <TouchableOpacity onPress={() => router.push('/reports/total')}>
+                <Card style={styles.statCard} variant="elevated">
+                  <FileText size={24} color={COLORS.info} />
+                  <Text style={styles.statValue}>{ANALYTICS_DATA.overview.totalReports}</Text>
+                  <Text style={styles.statLabel}>Total</Text>
+                </Card>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/reports/pending')}>
+                <Card style={styles.statCard} variant="elevated">
+                  <Clock size={24} color={COLORS.warning} />
+                  <Text style={styles.statValue}>{ANALYTICS_DATA.overview.pendingReports}</Text>
+                  <Text style={styles.statLabel}>Pending</Text>
+                </Card>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/reports/approved')}>
+                <Card style={styles.statCard} variant="elevated">
+                  <CheckCircle size={24} color={COLORS.success} />
+                  <Text style={styles.statValue}>{ANALYTICS_DATA.overview.approvedReports}</Text>
+                  <Text style={styles.statLabel}>Approved</Text>
+                </Card>
+              </TouchableOpacity>
+            </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {selectedTab === 'all' ? 'All Reports' :
-              selectedTab === 'my' ? 'My Reports' :
-                selectedTab === 'pending' ? 'Pending Reports' : 'Reports'}
-          </Text>
-          {DEMO_REPORTS
-            .filter(report => {
-              if (selectedTab === 'pending') return report.status === 'pending';
-              if (selectedTab === 'my') return report.reporterName === profile?.full_name;
-              return true;
-            })
-            .map(renderReport)}
-        </View>
-
-        <SocialFooter />
-      </ScrollView>
+            <View style={[styles.section, { paddingBottom: 0 }]}>
+              <Text style={styles.sectionTitle}>
+                {selectedTab === 'all' ? 'All Reports' :
+                  selectedTab === 'my' ? 'My Reports' :
+                    selectedTab === 'pending' ? 'Pending Reports' : 'Reports'}
+              </Text>
+            </View>
+          </>
+        }
+        ListFooterComponent={<SocialFooter />}
+      />
 
       <TouchableOpacity style={styles.fab} onPress={() => setShowForm(true)}>
         <Plus size={24} color={COLORS.white} />
@@ -541,6 +602,9 @@ export default function ReportsScreen() {
             />
 
             <Text style={styles.sectionLabel}>Media Attachments</Text>
+            <Text style={styles.uploadGuidance}>
+              Supported formats: JPG, PNG, MP4. Max file size: 50MB.
+            </Text>
 
             <View style={styles.mediaButtons}>
               <TouchableOpacity style={styles.mediaButton} onPress={takePhoto}>
@@ -561,11 +625,21 @@ export default function ReportsScreen() {
                   {selectedImages.map((uri, index) => (
                     <View key={index} style={styles.imageItem}>
                       <Image source={{ uri }} style={styles.imagePreview} />
+                      {uploadProgress[uri] !== undefined && uploadProgress[uri] < 1 && (
+                        <View style={styles.progressOverlay}>
+                          <View style={[styles.progressBar, { width: `${uploadProgress[uri] * 100}%` }]} />
+                        </View>
+                      )}
+                      {uploadProgress[uri] === 1 && (
+                        <View style={styles.successOverlay}>
+                          <CheckCircle size={16} color={COLORS.white} />
+                        </View>
+                      )}
                       <TouchableOpacity
                         style={styles.removeButton}
                         onPress={() => removeImage(index)}
                       >
-                        <Trash2 size={16} color={COLORS.white} />
+                        <XCircle size={16} color={COLORS.white} />
                       </TouchableOpacity>
                     </View>
                   ))}
@@ -617,6 +691,7 @@ const styles = StyleSheet.create({
   modalTitle: { ...TYPOGRAPHY.h3, color: COLORS.text },
   form: { flex: 1, padding: SPACING.lg },
   label: { ...TYPOGRAPHY.body2, color: COLORS.text, marginBottom: SPACING.xs, fontWeight: '600' },
+  uploadGuidance: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginBottom: SPACING.sm },
   pickerContainer: { marginBottom: SPACING.md },
   optionsRow: { flexDirection: 'row' },
   optionChip: { paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm, borderRadius: 8, backgroundColor: COLORS.surface, marginRight: SPACING.sm, borderWidth: 1, borderColor: COLORS.border },
@@ -661,4 +736,7 @@ const styles = StyleSheet.create({
   segmentValue: { ...TYPOGRAPHY.body2, fontWeight: '600', color: COLORS.primary },
   segmentBar: { height: 8, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden' },
   segmentFill: { height: '100%', borderRadius: 4 },
+  progressOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, backgroundColor: COLORS.white + '40', borderRadius: 2, overflow: 'hidden' },
+  progressBar: { height: '100%', backgroundColor: COLORS.primary },
+  successOverlay: { position: 'absolute', top: 4, left: 4, backgroundColor: COLORS.success + 'CC', borderRadius: 10, padding: 2 },
 });

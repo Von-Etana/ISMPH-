@@ -115,7 +115,10 @@ export default function UsersManagementScreen() {
                 <View style={styles.roleActions}>
                   <Text style={styles.actionsLabel}>Change Role:</Text>
                   <View style={styles.roleButtons}>
-                    {['public', 'staff'].map((role) => (
+                    {(currentUser?.role === 'super_admin' 
+                      ? ['public', 'staff', 'state_admin', 'super_admin'] 
+                      : ['public', 'staff']
+                    ).map((role) => (
                       <TouchableOpacity
                         key={role}
                         style={[
@@ -128,7 +131,7 @@ export default function UsersManagementScreen() {
                           styles.roleButtonText,
                           user.role === role && styles.roleButtonTextActive
                         ]}>
-                          {role.charAt(0).toUpperCase() + role.slice(1)}
+                          {role.charAt(0).toUpperCase() + role.slice(1).replace('_', ' ')}
                         </Text>
                       </TouchableOpacity>
                     ))}

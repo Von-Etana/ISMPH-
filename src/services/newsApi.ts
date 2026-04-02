@@ -3,6 +3,7 @@ import { logger } from './logger';
 
 const NEWS_API_KEY = 'a40a6ed71928423dafd4888f6b5d18ea';
 const NEWS_API_BASE_URL = 'https://newsapi.org/v2';
+const DEFAULT_QUERY = '("public health" OR "healthcare" OR "disease" OR "vaccination" OR "hospital" OR "clinic" OR "maternal" OR "medical") AND "Nigeria"';
 
 interface NewsAPIResponse {
   status: string;
@@ -35,7 +36,7 @@ class NewsAPIService {
   }
 
   async getHealthNews(
-    query: string = 'health Nigeria',
+    query: string = DEFAULT_QUERY,
     pageSize: number = 20,
     page: number = 1
   ): Promise<NewsArticle[]> {
@@ -63,7 +64,7 @@ class NewsAPIService {
   ): Promise<NewsArticle[]> {
     try {
       // Use 'everything' endpoint instead of 'top-headlines' for better results
-      const url = `${NEWS_API_BASE_URL}/everything?q=health+Nigeria&apiKey=${NEWS_API_KEY}&pageSize=${pageSize}&sortBy=publishedAt&language=en`;
+      const url = `${NEWS_API_BASE_URL}/everything?q=${encodeURIComponent(DEFAULT_QUERY)}&apiKey=${NEWS_API_KEY}&pageSize=${pageSize}&sortBy=publishedAt&language=en`;
 
       const response = await fetch(url);
       const data: NewsAPIResponse = await response.json();
@@ -137,7 +138,8 @@ class NewsAPIService {
     pageSize: number = 20
   ): Promise<NewsArticle[]> {
     try {
-      let url = `${NEWS_API_BASE_URL}/everything?q=${encodeURIComponent(query)}+health&apiKey=${NEWS_API_KEY}&pageSize=${pageSize}&sortBy=publishedAt&language=en`;
+      const enhancedQuery = `(${query}) AND ("health" OR "medical" OR "healthcare") AND "Nigeria"`;
+      let url = `${NEWS_API_BASE_URL}/everything?q=${encodeURIComponent(enhancedQuery)}&apiKey=${NEWS_API_KEY}&pageSize=${pageSize}&sortBy=publishedAt&language=en`;
 
       if (fromDate) {
         url += `&from=${fromDate}`;

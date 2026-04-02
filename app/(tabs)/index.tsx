@@ -206,7 +206,11 @@ export default function HomeScreen() {
         {/* Policy Commitments */}
         <Animated.View entering={FadeInDown.delay(400).duration(500)} style={styles.section}>
           <Text style={styles.sectionTitle}>Policy Commitments</Text>
-          <Card style={styles.policyCard} variant="outlined">
+          <Card
+            style={styles.policyCard}
+            variant="outlined"
+            onPress={() => router.push({ pathname: '/news', params: { category: 'Health Policy/Legislation' } })}
+          >
             <Badge label="Active" variant="custom" style={{ backgroundColor: COLORS.success }} />
             <Text style={styles.policyTitle}>Government Support</Text>
             <Text style={styles.policyText}>
@@ -214,13 +218,21 @@ export default function HomeScreen() {
             </Text>
           </Card>
 
-          <Card style={styles.policyCard} variant="outlined">
+          <Card
+            style={styles.policyCard}
+            variant="outlined"
+            onPress={() => router.push({ pathname: '/news', params: { category: 'Health Budget/Finance' } })}
+          >
             <Badge label="Funded" variant="custom" style={{ backgroundColor: COLORS.error }} />
             <Text style={styles.policyTitle}>Resource Allocation</Text>
             <Text style={styles.policyText}>Dedicated funding for health monitoring systems</Text>
           </Card>
 
-          <Card style={styles.policyCard} variant="outlined">
+          <Card
+            style={styles.policyCard}
+            variant="outlined"
+            onPress={() => router.push({ pathname: '/news', params: { category: 'Health Policy/Legislation' } })}
+          >
             <Badge label="Enacted" variant="custom" style={{ backgroundColor: COLORS.warning }} />
             <Text style={styles.policyTitle}>Policy Framework</Text>
             <Text style={styles.policyText}>New policies to strengthen disease surveillance</Text>

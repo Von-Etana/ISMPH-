@@ -59,7 +59,7 @@ So we need to check the **upload date** in Google Play Console.
 Once you identify which build is in Google Play Console, we can get its SHA-1.
 
 **Most likely scenario:**
-The build with SHA-1 `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1` is probably from an **older build** or a **different EAS account/project**.
+The build with SHA-1 `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53` is probably from an **older build** or a **different EAS account/project**.
 
 ---
 
@@ -83,7 +83,7 @@ https://expo.dev/accounts/von-etana/projects/ismph-media-tracker/builds/c32a79e9
 
 ## 🎯 Most Likely Solution
 
-Based on the error, the keystore with SHA-1 `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1` was used for a build that was successfully uploaded to Google Play.
+Based on the error, the keystore with SHA-1 `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53` was used for a build that was successfully uploaded to Google Play.
 
 **This keystore might be from:**
 1. An older EAS build (before Nov 17)
@@ -116,7 +116,7 @@ Select: **production** → **Keystore: View details**
 
 **If you see multiple keystores**, select the one with SHA-1:
 ```
-C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
+DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53
 ```
 
 ### Option 2: Check Google Play Console for Upload Key
@@ -126,12 +126,12 @@ C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1
 3. Go to: **Setup → App signing**
 4. Under **"Upload key certificate"**, you'll see the SHA-1
 
-**If it matches `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1`:**
+**If it matches `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`:**
 - This is your upload key
 - You need to find which EAS build used this keystore
 
 **If it shows a different SHA-1:**
-- The SHA-1 `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1` might be the **App Signing Key** (Google's key)
+- The SHA-1 `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53` might be the **App Signing Key** (Google's key)
 - In this case, you need to use the **Upload Key** instead
 
 ### Option 3: Reset to a Known Keystore
@@ -211,7 +211,7 @@ eas build --platform android --profile production
 eas credentials -p android
 ```
 
-Check that SHA-1 matches: `C8:9E:1C:F0:24:C0:80:FD:A3:DC:48:93:FF:D5:10:17:3F:A2:44:D1`
+Check that SHA-1 matches: `DD:14:CE:65:13:34:F5:30:4F:A8:DA:86:69:4D:CF:7E:D4:1C:AA:53`
 
 ### Step 8: Submit
 
