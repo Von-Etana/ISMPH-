@@ -132,15 +132,15 @@ export default function AnalyticsScreen() {
 
   // Vertical bar chart for grouped data
   const renderVerticalBarChart = (data: Array<{ label: string, value: number }>, maxValue: number, color: string = COLORS.primary) => (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.verticalChartContainer}>
-      <View style={[styles.verticalBarsRow, { width: Math.max(width - SPACING.lg * 2, data.length * 52) }]}>
+    <View style={styles.verticalChartContainer}>
+      <View style={styles.verticalBarsRow}>
         {data.map((item, index) => (
           <View key={item.label} style={styles.verticalBarWrapper}>
             <Text style={styles.verticalBarValue}>{item.value}</Text>
             <View style={styles.verticalBarTrack}>
               <View
                 style={[styles.verticalBarFill, {
-                  height: `${(item.value / (maxValue || 1)) * 100}%`,
+                  height: `${(item.value / maxValue) * 100}%`,
                   backgroundColor: color
                 }]}
               />
@@ -149,7 +149,7 @@ export default function AnalyticsScreen() {
           </View>
         ))}
       </View>
-    </ScrollView>
+    </View>
   );
 
   const renderPieSegment = (data: PieData, total: number) => (
@@ -398,13 +398,13 @@ const styles = StyleSheet.create({
 
   // Trends
   trendsCard: { padding: SPACING.md },
-  trendChart: { marginBottom: SPACING.md },
-  trendTitle: { ...TYPOGRAPHY.body2, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.md },
-  trendBars: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 100, paddingHorizontal: SPACING.xs },
+  trendChart: { marginBottom: SPACING.lg },
+  trendTitle: { ...TYPOGRAPHY.body1, fontWeight: '600', color: COLORS.text, marginBottom: SPACING.md },
+  trendBars: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', height: 120, paddingHorizontal: SPACING.md },
   trendBar: { alignItems: 'center', flex: 1 },
-  trendFill: { width: 24, borderRadius: 4, marginBottom: SPACING.xs },
-  trendLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, fontSize: 10 },
-  trendValue: { ...TYPOGRAPHY.caption, color: COLORS.text, fontWeight: '600', marginTop: 2, fontSize: 10 },
+  trendFill: { width: 30, borderRadius: 4, marginBottom: SPACING.sm },
+  trendLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  trendValue: { ...TYPOGRAPHY.caption, color: COLORS.text, fontWeight: '600', marginTop: SPACING.xs },
 
   // Charts
   chartCard: { padding: SPACING.md },
@@ -419,13 +419,13 @@ const styles = StyleSheet.create({
   horizontalBarFill: { height: '100%', borderRadius: 6 },
 
   // Vertical bar chart styles
-  verticalChartContainer: { paddingVertical: SPACING.sm },
-  verticalBarsRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-start', height: 140, paddingHorizontal: SPACING.xs },
-  verticalBarWrapper: { alignItems: 'center', width: 48, marginHorizontal: 2 },
-  verticalBarValue: { ...TYPOGRAPHY.caption, color: COLORS.text, fontWeight: '600', marginBottom: 2, fontSize: 10 },
-  verticalBarTrack: { width: 24, height: 100, backgroundColor: COLORS.border, borderRadius: 4, overflow: 'hidden', justifyContent: 'flex-end' },
-  verticalBarFill: { width: '100%', borderRadius: 4 },
-  verticalBarLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginTop: 4, textAlign: 'center', fontSize: 9, height: 24 },
+  verticalChartContainer: { paddingVertical: SPACING.md },
+  verticalBarsRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', height: 160, paddingHorizontal: SPACING.xs },
+  verticalBarWrapper: { alignItems: 'center', flex: 1, maxWidth: 60 },
+  verticalBarValue: { ...TYPOGRAPHY.caption, color: COLORS.text, fontWeight: '600', marginBottom: SPACING.xs },
+  verticalBarTrack: { width: 32, height: 120, backgroundColor: COLORS.border, borderRadius: 6, overflow: 'hidden', justifyContent: 'flex-end' },
+  verticalBarFill: { width: '100%', borderRadius: 6 },
+  verticalBarLabel: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginTop: SPACING.xs, textAlign: 'center', fontSize: 10 },
 
   categoriesCard: { padding: SPACING.md },
   categoryItem: { marginBottom: SPACING.md },
